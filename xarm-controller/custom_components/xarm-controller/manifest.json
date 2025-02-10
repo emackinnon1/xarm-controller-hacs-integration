@@ -1,0 +1,11 @@
+{
+  "codeowners": ["emackinnon1"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/emackinnon1/xarm-controller",
+  "domain": "xarm-controller",
+  "iot_class": "local_push",
+  "name": "xarm-controller-mqtt-platform",
+  "requirements": [],
+  "version": "1.0.0"
+}
