@@ -1,0 +1,17 @@
+{
+  "config": {
+    "error": {
+      "bad_host": "Bad host name.",
+      "test_connection": "Something went wrong with the ping."
+    },
+    "step": {
+      "host": {
+        "data": {
+          "host": "Host of the xArm robotic arm"
+        },
+        "description": "The host ip address of the xArm robotic arm.",
+        "title": "Arm Host"
+      }
+    }
+  }
+}
