@@ -9,7 +9,6 @@ from ping3 import ping
 from .const import DOMAIN
 
 
-
 _LOGGER = logging.getLogger(__name__)
 
 HOST_SCHEMA = vol.Schema(
@@ -20,39 +19,43 @@ HOST_SCHEMA = vol.Schema(
 async def validate_host(ip: str) -> None:
     """Validates a GitHub repo path.
 
-    Raises a ValueError if the path is invalid.
+    Raises a ValueError if the host name is invalid.
     """
     if len(ip.split(".")) != 4:
-        raise ValueError("bad host name")
+        raise ValueError("Bad host name.")
     try:
       ping(ip)
     except Exception as exc:
-      raise exc("Something went wrong with the ping")
+      raise exc("Something went wrong with the ping.")
 
 
 class XArmControllerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-  """Github Custom config flow."""
-  
-  VERSION = 1
-  CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
+    """Github Custom config flow."""
 
-  data: Optional[Dict[str, Any]]
+    VERSION = 1
+    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
-  async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
-      """Invoked when a user initiates a flow via the user interface."""
+    data: Optional[Dict[str, Any]]
 
-      errors: Dict[str, str] = {}
-      if user_input is not None:
-          try:
-              await validate_host(user_input[CONF_HOST], self.hass)
-          except ValueError:
-              errors["base"] = "host_error"
-          if not errors:
-              # Input is valid, set data.
-              self.data = user_input
-              # User is done adding repos, create the config entry.
-              return self.async_create_entry(title="XArm Controller", data=self.data)
+    async def async_step_host(self, user_input: Optional[Dict[str, Any]] = None):
+        """Invoked when a user initiates a flow via the user interface."""
 
-      return self.async_show_form(
-          step_id="user", data_schema=HOST_SCHEMA, errors=errors
-      )
+        VERSION = 1
+        # discovered_host: str
+        # discovered_device: str
+        errors: Dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                await validate_host(user_input[CONF_HOST], self.hass)
+            except ValueError:
+                errors["base"] = "host_error"
+            if not errors:
+                # Input is valid, set data.
+                self.data = user_input
+                # User is done adding host name, create the config entry.
+                return self.async_create_entry(title="XArm Controller", data=self.data)
+
+        return self.async_show_form(
+        step_id="host", data_schema=HOST_SCHEMA, errors=errors
+    )
