@@ -1,19 +1,52 @@
+from enum import StrEnum
 import logging
 import voluptuous as vol
 from typing import Any, Dict, Optional
 from homeassistant import config_entries, core
 from homeassistant import data_entry_flow
-from homeassistant.const import CONF_HOST
+from homeassistant.const import CONF_HOST, CONF_MODEL
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from ping3 import ping
 
 from .const import DOMAIN
 
 
+class XArmModels(StrEnum):
+    XArm5 = "XArm5"
+    XArm6 = "XArm6"
+    XArm7 = "XArm7"
+    XArm6Lite = "XArm6Lite"
+    XArm850 = "XArm850"
+
+
 _LOGGER = logging.getLogger(__name__)
 
-HOST_SCHEMA = vol.Schema({vol.Required(CONF_HOST): cv.string})
+model_options = [
+    SelectOptionDict(
+        value=e.value,
+        label=f"Model type: {e.value}",
+    )
+    for e in XArmModels
+]
+
+HOST_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_HOST): cv.string,
+        vol.Required(CONF_MODEL): SelectSelector(
+            SelectSelectorConfig(
+                options=model_options,
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+        ),
+    }
+)
 
 
 async def validate_host(ip: str) -> None:
@@ -46,7 +79,6 @@ class XArmControllerConfigFlow(
     ) -> ConfigFlowResult:
         """Invoke when a user initiates a flow via the user interface."""
 
-        VERSION = 1
         # discovered_host: str
         # discovered_device: str
         errors: dict[str, str] = {}
