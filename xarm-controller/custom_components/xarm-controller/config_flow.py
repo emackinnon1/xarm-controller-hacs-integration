@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 model_options = [
     SelectOptionDict(
         value=e.value,
-        label=f"Model type: {e.value}",
+        label=f"Model: {e.value}",
     )
     for e in XArmModels
 ]
