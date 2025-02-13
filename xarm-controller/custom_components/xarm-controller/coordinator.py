@@ -8,11 +8,11 @@ from homeassistant.core import HomeAssistant
 from xarm.wrapper import XArmAPI
 
 
-class XArmContollerCoordinator:
+class XArmControllerCoordinator:
 
     config_entry: ConfigEntry
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the XArmControllerCoordinator."""
-        self.xarm = XArmAPI(entry.data[CONF_HOST], session=async_get_clientsession(hass))
+        self.xarm = XArmAPI(entry.data[CONF_HOST])
         return True
