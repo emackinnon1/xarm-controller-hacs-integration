@@ -19,6 +19,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, LOGGER, POS_X, POS_Y, POS_Z, ROLL, PITCH, YAW
 from .coordinator import XArmControllerCoordinator
+from .entity import XArmControllerEntity
 
 @dataclass
 class XArmControllerPositionEntityMixin:
@@ -107,7 +108,7 @@ async def async_setup_entry(
     LOGGER.debug("NUMBER::async_setup_entry DONE")
 
 
-class XArmControllerNumber(BambuLabEntity, NumberEntity):
+class XArmControllerNumber(XArmControllerEntity, NumberEntity):
     """ Defined the Number"""
     entity_description: XArmPositionNumberEntityDescription
 
