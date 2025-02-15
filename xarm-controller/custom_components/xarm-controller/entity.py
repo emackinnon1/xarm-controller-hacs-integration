@@ -10,16 +10,9 @@ from .coordinator import XArmControllerCoordinator
 class XArmControllerEntity(CoordinatorEntity[XArmControllerCoordinator]):
     """Base class for XArm Controller entities."""
 
-    def __init__(
-    self,
-    coordinator: XArmControllerCoordinator,
-  ) -> None:
-        """Initialize the XArm Controller entity."""
-        super().__init__(coordinator=coordinator)
-        self.xarm = coordinator.xarm
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self.romy.unique_id)},
-            manufacturer="ROMY",
-            name=self.romy.name,
-            model=self.romy.model,
-        )
+    _attr_has_entity_name = True
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this Bambu  device."""
+        return self.coordinator.get_device()

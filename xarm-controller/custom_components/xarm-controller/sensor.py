@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import XArmContollerCoordinator
+from .coordinator import XArmControllerCoordinator
 
 SENSORS: list[SensorEntityDescription] = [
     SensorEntityDescription(
@@ -66,13 +66,11 @@ SENSORS: list[SensorEntityDescription] = [
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    # SPEED
-    # DISTANCE
 ]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: XArmContollerCoordinator,
+    entry: XArmControllerCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
@@ -81,7 +79,6 @@ async def async_setup_entry(
         [
             XArmControllerSensor(
                 coordinator=entry.runtime_data,
-                translation_key="visibility",
             )
         ]
     )
@@ -90,11 +87,17 @@ async def async_setup_entry(
 class XArmControllerSensor(SensorEntity):
     """Representation of a XArm sensor."""
 
+    def __init__(self, coordinator: XArmControllerCoordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__()
+        self.coordinator = coordinator
+        self.attrs: dict[str, Any]
+
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self.coordinator.data['name']} Visibility"
-    
+        return f"{self.coordinator.data['name']} Sensor"
+
     @property
     def connected(self):
         """Return the connection status of the sensor."""

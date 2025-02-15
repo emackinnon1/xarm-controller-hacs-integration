@@ -1,5 +1,6 @@
 from homeassistant import core
 from homeassistant.config_entries import ConfigType, ConfigEntry
+from homeassistant.const import CONF_HOST
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.const import Platform
 
@@ -7,20 +8,24 @@ from .const import DOMAIN
 
 from .coordinator import XArmControllerCoordinator
 
+from xarm.wrapper import XArmAPI
+
 type XArmConfigEntry = ConfigEntry[XArmControllerCoordinator]
 
-PLATFORMS = [Platform.SENSOR, Platform.REMOTE]
+PLATFORMS = [Platform.SENSOR]
 
 
 async def async_setup_entry(
     hass: core.HomeAssistant,
     entry: XArmConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    # async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the xarm-controller-platform component."""
-    coordinator = XArmControllerCoordinator(hass=hass)
 
-    await coordinator.async_config_entry_first_refresh()
+    client = XArmAPI(entry.data[CONF_HOST])
+    coordinator = XArmControllerCoordinator(hass=hass, entry=entry, client=client)
+
+    # await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
 
