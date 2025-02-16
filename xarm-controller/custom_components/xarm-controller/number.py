@@ -8,7 +8,7 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfLength
+from homeassistant.const import UnitOfSpeed, UnitOfLength
 from homeassistant.core import HomeAssistant
 
 from homeassistant.const import CONF_HOST, CONF_MODEL
@@ -17,7 +17,7 @@ from homeassistant.const import CONF_HOST, CONF_MODEL
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
-from .const import DOMAIN, LOGGER, POS_X, POS_Y, POS_Z, ROLL, PITCH, YAW
+from .const import DOMAIN, LOGGER, GRIPPER_SPEED, POS_X, POS_Y, POS_Z, ROLL, PITCH, YAW
 from .coordinator import XArmControllerCoordinator
 from .entity import XArmControllerEntity
 
@@ -43,7 +43,9 @@ NUMBERS = tuple[XArmPositionNumberEntityDescription, ...] = (
         icon="mdi:axis-x-arrow",
         mode=NumberMode.BOX,
         native_step=1,
-        value_fn=lambda device: device.position,
+        native_min_value=0,
+        native_max_value=1000,  # TODO: Determine actual limit
+        value_fn=lambda device: device.position.x,
         set_value_fn=lambda device, value: device.set_position(x=value),
     ),
     XArmPositionNumberEntityDescription(
@@ -53,7 +55,9 @@ NUMBERS = tuple[XArmPositionNumberEntityDescription, ...] = (
         icon="mdi:axis-y-arrow",
         mode=NumberMode.BOX,
         native_step=1,
-        value_fn=lambda device: device.position,
+        native_min_value=0,
+        native_max_value=1000,  # TODO: Determine actual limit
+        value_fn=lambda device: device.position.y,
         set_value_fn=lambda device, value: device.set_position(y=value),
     ),
     XArmPositionNumberEntityDescription(
@@ -63,35 +67,22 @@ NUMBERS = tuple[XArmPositionNumberEntityDescription, ...] = (
         icon="mdi:axis-z-arrow",
         mode=NumberMode.BOX,
         native_step=1,
-        value_fn=lambda device: device.position,
+        native_min_value=0,
+        native_max_value=1000,  # TODO: Determine actual limit
+        value_fn=lambda device: device.position.z,
         set_value_fn=lambda device, value: device.set_position(z=value),
     ),
     XArmPositionNumberEntityDescription(
-        key=ROLL,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        device_class=NumberDeviceClass.DISTANCE,
-        icon="mdi:axis-x-rotate-clockwise",
-        mode=NumberMode.BOX,
-        native_step=1,
-        value_fn=lambda device: device.position,
-    ),
-    XArmPositionNumberEntityDescription(
-        key=PITCH,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        device_class=NumberDeviceClass.DISTANCE,
-        icon="mdi:axis-y-rotate-clockwise",
-        mode=NumberMode.BOX,
-        native_step=1,
-        value_fn=lambda device: device.position,
-    ),
-    XArmPositionNumberEntityDescription(
-        key=YAW,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        device_class=NumberDeviceClass.DISTANCE,
+        key=GRIPPER_SPEED,
+        native_unit_of_measurement=UnitOfSpeed.SPEED,
+        device_class=NumberDeviceClass.SPEED,
         icon="mdi:axis-z-rotate-clockwise",
         mode=NumberMode.BOX,
-        native_step=1,
+        native_step=5,
+        native_min_value=0,
+        native_max_value=5000,  # TODO: Determine actual limit
         value_fn=lambda device: device.position,
+        set_value_fn=lambda device, speed: device.set_position(speed),
     ),
 )
 
@@ -119,23 +110,24 @@ class XArmControllerNumber(XArmControllerEntity, NumberEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the number."""
-        self.entity_description = description
-        self._attr_unique_id = f"{config_entry.data[CONF_HOST]}_{config_entry.data[CONF_MODEL]}_{description.key}"
-        self._attr_native_value = description.value_fn(coordinator.get_model())
-
         super().__init__(coordinator=coordinator)
+        self.coordinator = coordinator
+        self.entity_description = description
+        xarm_info = self.coordinator.get_xarm().info
+        self._attr_unique_id = f"{xarm_info.serial}_{description.key}"
+        self._attr_native_value = description.value_fn(coordinator.get_model())
 
     @property
     def available(self) -> bool:
         """Is the number available"""
-        return self.coordinator.get_model().is_connected()
+        return self.coordinator.get_xarm().connected
 
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
-        return self.entity_description.value_fn(self.coordinator.get_model())
+        return self.entity_description.value_fn(self.coordinator.get_xarm())
 
     @native_value.setter
     def set_native_value(self, value: float) -> None:
         """Update the current value."""
-        self.entity_description.set_value_fn(self.coordinator.get_model())
+        self.entity_description.set_value_fn(self.coordinator.get_xarm(), value)
