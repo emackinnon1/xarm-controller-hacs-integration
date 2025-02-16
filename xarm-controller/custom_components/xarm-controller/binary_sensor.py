@@ -96,7 +96,7 @@ class XArmControllerBinarySensor(XArmControllerEntity, BinarySensorEntity):
         super().__init__(coordinator=coordinator)
         self.coordinator = coordinator
         self.entity_description = description
-        xarm_info = self.coordinator.get_xarm().info
+        xarm_info = self.coordinator.get_xarm_device().info
         self._attr_unique_id = f"{xarm_info.serial}_{description.key}"
 
     @property

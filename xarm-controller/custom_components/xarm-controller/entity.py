@@ -15,4 +15,4 @@ class XArmControllerEntity(CoordinatorEntity[XArmControllerCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this XArm device."""
-        return self.coordinator.get_device()
+        return self.coordinator.get_xarm_device()

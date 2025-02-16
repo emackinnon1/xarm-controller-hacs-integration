@@ -1,72 +1,98 @@
 """Support for XArm sensor."""
 
 from __future__ import annotations
+from dataclasses import dataclass
+from collections.abc import Callable
+from datetime import datetime
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass, SensorEntityDescription, SensorDeviceClass
-from homeassistant.core import HomeAssistant
+from homeassistant.components.sensor import (
+    SensorEntity,
+    SensorStateClass,
+    SensorEntityDescription,
+    SensorDeviceClass,
+)
+from homeassistant.core import HomeAssistant, UnitOfLength
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import XArmControllerCoordinator
+from .const import DOMAIN, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
+from .entity import XArmControllerEntity
 
-SENSORS: list[SensorEntityDescription] = [
-    SensorEntityDescription(
-        key="position_x",
-        translation_key="position_x",
+
+@dataclass
+class XArmControllerSensorEntityDescriptionMixin:
+    """Mixin for required keys."""
+
+    value_fn: Callable[..., datetime | StateType]
+
+
+@dataclass
+class XArmControllerSensorEntityDescription(
+    SensorEntityDescription, XArmControllerSensorEntityDescriptionMixin
+):
+    """Sensor entity description for XArm Controller."""
+
+    available_fn: Callable[..., bool] = lambda _: True
+    exists_fn: Callable[..., bool] = lambda _: True
+    extra_attributes: Callable[..., dict] = lambda _: {}
+    icon_fn: Callable[..., str] = lambda _: None
+
+
+SENSORS: list[XArmControllerSensorEntityDescription] = [
+    XArmControllerSensorEntityDescription(
+        key=ROLL,
+        translation_key=ROLL,
         device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.arm.position.roll,
+        icon="mdi:axis-x-rotate-counterclockwise",
     ),
-    SensorEntityDescription(
-        key="position_y",
-        translation_key="position_y",
+    XArmControllerSensorEntityDescription(
+        key=PITCH,
+        translation_key=PITCH,
         device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.arm.position.pitch,
+        icon="mdi:axis-y-rotate-counterclockwise",
     ),
-    SensorEntityDescription(
-        key="position_z",
-        translation_key="position_z",
-        device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SensorEntityDescription(
-        key="roll",
-        translation_key="roll",
-        device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SensorEntityDescription(
-        key="pitchh",
-        translation_key="putch",
-        device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SensorEntityDescription(
-        key="yaw",
+    XArmControllerSensorEntityDescription(
+        key=YAW,
         translation_key="yaw",
         device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.arm.position.yaw,
+        icon="mdi:axis-z-rotate-counterclockwise",
     ),
-    SensorEntityDescription(
+    XArmControllerSensorEntityDescription(
         key="error_code",
         translation_key="error_code",
         device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.arm.info.error_code,
+        icon="mdi:alert",
     ),
-    SensorEntityDescription(
-        key="speed",
-        translation_key="speed",
-        device_class=SensorDeviceClass.SPEED,
+    XArmControllerSensorEntityDescription(
+        key="warn_code",
+        translation_key="warn_code",
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.arm.info.warn_code,
+        icon="mdi:alert-circle",
     ),
 ]
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -75,23 +101,36 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
 
-    async_add_entities(
-        [
-            XArmControllerSensor(
-                coordinator=entry.runtime_data,
-            )
-        ]
-    )
+    coordinator: XArmControllerCoordinator = hass.data[DOMAIN][entry.entry_id]
+
+    for sensor in SENSORS:
+        LOGGER.debug(f"Adding sensor: {sensor.key}")
+        async_add_entities(
+            [
+                XArmControllerSensor(
+                    coordinator=coordinator,
+                    description=sensor,
+                    config_entry=entry
+                )
+            ]
+        )
 
 
-class XArmControllerSensor(SensorEntity):
+class XArmControllerSensor(XArmControllerEntity, SensorEntity):
     """Representation of a XArm sensor."""
 
-    def __init__(self, coordinator: XArmControllerCoordinator) -> None:
+    def __init__(
+        self,
+        coordinator: XArmControllerCoordinator,
+        description: XArmControllerSensorEntityDescription,
+        config_entry: ConfigEntry,
+    ) -> None:
         """Initialize the sensor."""
-        super().__init__()
         self.coordinator = coordinator
-        self.attrs: dict[str, Any]
+        self.entity_description = description
+        arm_info = coordinator.get_xarm_device().info
+        self._attr_unique_id = f"{arm_info.sn}_{description.key}"
+        super().__init__(coordinator=coordinator)
 
     @property
     def name(self):
@@ -101,9 +140,23 @@ class XArmControllerSensor(SensorEntity):
     @property
     def connected(self):
         """Return the connection status of the sensor."""
-        return self.coordinator.data["connected"]
+        return self.coordinator.arm.connected
 
     @property
-    def position(self):
+    def extra_state_attributes(self) -> dict:
+        """Return the state attributes."""
+        return self.entity_description.extra_attributes(self)
+
+    @property
+    def native_value(self) -> datetime | StateType:
         """Return the state of the sensor."""
-        return self.coordinator.data[self.translation_key]
+        return self.entity_description.value_fn(self)
+
+    @property
+    def icon(self) -> str | None:
+        """Return a dynamic icon if needed"""
+        return (
+            self.entity_description.icon_fn(self)
+            if self.entity_description.icon_fn
+            else self.entity_description.icon
+        )

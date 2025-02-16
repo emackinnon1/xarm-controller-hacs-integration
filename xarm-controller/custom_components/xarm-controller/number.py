@@ -113,21 +113,21 @@ class XArmControllerNumber(XArmControllerEntity, NumberEntity):
         super().__init__(coordinator=coordinator)
         self.coordinator = coordinator
         self.entity_description = description
-        xarm_info = self.coordinator.get_xarm().info
+        xarm_info = self.coordinator.get_xarm_device().info
         self._attr_unique_id = f"{xarm_info.serial}_{description.key}"
-        self._attr_native_value = description.value_fn(coordinator.get_model())
+        self._attr_native_value = description.value_fn(coordinator.get_xarm_device())
 
     @property
     def available(self) -> bool:
         """Is the number available"""
-        return self.coordinator.get_xarm().connected
+        return self.coordinator.get_xarm_device().connected
 
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
-        return self.entity_description.value_fn(self.coordinator.get_xarm())
+        return self.entity_description.value_fn(self.coordinator.get_xarm_device())
 
     @native_value.setter
     def set_native_value(self, value: float) -> None:
         """Update the current value."""
-        self.entity_description.set_value_fn(self.coordinator.get_xarm(), value)
+        self.entity_description.set_value_fn(self.coordinator.get_xarm_device(), value)
