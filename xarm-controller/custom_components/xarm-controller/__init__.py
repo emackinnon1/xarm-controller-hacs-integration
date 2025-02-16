@@ -22,16 +22,27 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the xarm-controller-platform component."""
 
-    client = XArmAPI(entry.data[CONF_HOST])
-    coordinator = XArmControllerCoordinator(hass=hass, entry=entry, client=client)
+    coordinator = XArmControllerCoordinator(hass=hass, entry=entry)
 
     # await coordinator.async_config_entry_first_refresh()
 
-    entry.runtime_data = coordinator
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
+
+    async def move_axis(call: ServiceCall):
+        """Handle the service call."""
+        if check_service_call_payload(call) is False:
+            return
+        hass.bus.fire(MOVE_AXIS_BUS_EVENT, call.data)
+
+    # Register the service with Home Assistant
+    hass.services.async_register(
+        DOMAIN, "move_axis", move_axis  # Service name  # Handler function
+    )
+
     return True
 
 

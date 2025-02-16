@@ -6,9 +6,12 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_MODEL
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from xarm.wrapper import XArmAPI
+
+from .const import DOMAIN, LOGGER, LOGGERFORHA
 
 
 @dataclass
@@ -54,29 +57,30 @@ class XArmDummyAPI:
         """Initialize the dummy xArm API."""
         self.host = host
 
-    @property
-    def host(self) -> str:
-        """Return the host of the dummy xArm API."""
-        return self._host
-
-    @host.setter
-    def host(self, host: str) -> None:
-        """Set the host of the dummy xArm API."""
-        self._host = host
-
 
 class XArmControllerCoordinator(DataUpdateCoordinator[XArmData]):
-    """XArmControllerCoordinator that wraps xArm Python SDK."""
+    """XArmControllerCoordinator that wraps xArm client."""
+
     hass: HomeAssistant
     config_entry: ConfigEntry
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, client: XArmAPI) -> None:
         """Initialize the XArmControllerCoordinator."""
-        self.config_entry = entry
+
+        LOGGER.debug(f"ConfigEntry.Id: {entry.entry_id}")
+        self._hass = hass
+        self._entry = entry
         # self.xarm = XArmAPI(entry.data[CONF_HOST])
         self.xarm = XArmDummyAPI(entry.data[CONF_HOST])
         self.model = entry.data[CONF_MODEL]
+        # self.client = XArmAPI(entry.data[CONF_HOST])
 
 
-    def _async_update_data(self) -> int:
-
+    def get_xarm_device_info(self) -> DeviceInfo:
+        """Return device information about this XArm device."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.config_entry.unique_id)},
+            manufacturer="UFactory",
+            name=self.model,
+            model=self.model,
+        )
