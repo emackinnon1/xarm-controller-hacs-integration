@@ -14,6 +14,7 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from ping3 import ping
+from xarm.wrapper import XArmAPI
 
 from .const import DOMAIN
 
@@ -84,15 +85,23 @@ class XArmControllerConfigFlow(
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            # try:
-            #     await validate_host(user_input[CONF_HOST], self.hass)
-            # except ValueError:
-            #     errors["base"] = "host_error"
-            #     self.async_abort(reason="host_error")
+            try:
+                xarm = XArmAPI(
+                    user_input[CONF_HOST],
+                    do_not_open=True,
+                    enable_report=True,
+                    report_type="rich",
+                )
+            except Exception as exc:
+                errors["base"] = "connection_error"
+                errors["specific_error"] = str(exc)
+                self.async_abort(reason="connection_error")
             if not errors:
                 # Input is valid, set data.
                 self.data = user_input
                 # User is done adding host name, create the config entry.
+                self.data["serial_number"] = xarm.sn
+                self.data["device_type"] = xarm.device_type
                 return self.async_create_entry(title="XArm Controller", data=self.data)
 
         return self.async_show_form(
