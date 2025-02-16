@@ -12,7 +12,12 @@ from xarm.wrapper import XArmAPI
 
 type XArmConfigEntry = ConfigEntry[XArmControllerCoordinator]
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SENSOR,
+]
 
 
 async def async_setup_entry(
