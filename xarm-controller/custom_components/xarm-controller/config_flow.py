@@ -40,12 +40,12 @@ model_options = [
 HOST_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_HOST): cv.string,
-        vol.Required(CONF_MODEL): SelectSelector(
-            SelectSelectorConfig(
-                options=model_options,
-                mode=SelectSelectorMode.DROPDOWN,
-            )
-        ),
+        # vol.Required(CONF_MODEL): SelectSelector(
+        #     SelectSelectorConfig(
+        #         options=model_options,
+        #         mode=SelectSelectorMode.DROPDOWN,
+        #     )
+        # ),
     }
 )
 
@@ -100,7 +100,7 @@ class XArmControllerConfigFlow(
                 # Input is valid, set data.
                 self.data = user_input
                 # User is done adding host name, create the config entry.
-                self.data["serial_number"] = xarm.sn
+                self.data["serial"] = xarm.sn
                 self.data["device_type"] = xarm.device_type
                 return self.async_create_entry(title="XArm Controller", data=self.data)
 
