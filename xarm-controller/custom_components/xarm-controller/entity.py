@@ -4,10 +4,10 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import XArmControllerCoordinator
+from .coordinator import XArmControllerUpdateCoordinator
 
 
-class XArmControllerEntity(CoordinatorEntity[XArmControllerCoordinator]):
+class XArmControllerEntity(CoordinatorEntity[XArmControllerUpdateCoordinator]):
     """Base class for XArm Controller entities."""
 
     _attr_has_entity_name = True
@@ -15,4 +15,4 @@ class XArmControllerEntity(CoordinatorEntity[XArmControllerCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this XArm device."""
-        return self.coordinator.get_xarm_device()
+        return self.coordinator.get_xarm_model()

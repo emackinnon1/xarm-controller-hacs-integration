@@ -4,13 +4,13 @@ from homeassistant.const import CONF_HOST
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.const import Platform
 
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER, MOVE_ARM_EVENT
 
-from .coordinator import XArmControllerCoordinator
+from .coordinator import XArmControllerUpdateCoordinator
 
 from xarm.wrapper import XArmAPI
 
-type XArmConfigEntry = ConfigEntry[XArmControllerCoordinator]
+type XArmConfigEntry = ConfigEntry[XArmControllerUpdateCoordinator]
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
@@ -27,25 +27,49 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the xarm-controller-platform component."""
 
-    coordinator = XArmControllerCoordinator(hass=hass, entry=entry)
+    coordinator = XArmControllerUpdateCoordinator(hass=hass, entry=entry)
 
     # await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
+    def check_service_call_payload(call: core.ServiceCall):
+        LOGGER.debug(call)
+
+        area_ids = call.data.get("area_id", [])
+        device_ids = call.data.get("device_id", [])
+        entity_ids = call.data.get("entity_id", [])
+        label_ids = call.data.get("label_ids", [])
+
+        # Ensure only one device ID is passed
+        if not isinstance(area_ids, list) or len(area_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(device_ids, list) or len(device_ids) != 1:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(entity_ids, list) or len(entity_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(label_ids, list) or len(label_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+
+        return True
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
 
-    async def move_axis(call: ServiceCall):
+    async def move_xarm(call: core.ServiceCall):
         """Handle the service call."""
         if check_service_call_payload(call) is False:
             return
-        hass.bus.fire(MOVE_AXIS_BUS_EVENT, call.data)
+        hass.bus.fire(MOVE_ARM_EVENT, call.data)
 
     # Register the service with Home Assistant
     hass.services.async_register(
-        DOMAIN, "move_axis", move_axis  # Service name  # Handler function
+        DOMAIN, "move_xarm", move_xarm  # Service name  # Handler function
     )
 
     return True

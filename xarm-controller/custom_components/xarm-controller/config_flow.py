@@ -4,7 +4,7 @@ import voluptuous as vol
 from typing import Any, Dict, Optional
 from homeassistant import config_entries, core
 from homeassistant import data_entry_flow
-from homeassistant.const import CONF_HOST, CONF_MODEL
+from homeassistant.const import CONF_HOST, CONF_MODEL, ATTR_SERIAL_NUMBER
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     SelectOptionDict,
@@ -100,7 +100,7 @@ class XArmControllerConfigFlow(
                 # Input is valid, set data.
                 self.data = user_input
                 # User is done adding host name, create the config entry.
-                self.data["serial"] = xarm.sn
+                self.data[ATTR_SERIAL_NUMBER] = xarm.sn
                 self.data["device_type"] = xarm.device_type
                 return self.async_create_entry(title="XArm Controller", data=self.data)
 

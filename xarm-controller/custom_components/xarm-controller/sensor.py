@@ -16,7 +16,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import XArmControllerCoordinator
+from .coordinator import XArmControllerUpdateCoordinator
 from .const import DOMAIN, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
 from .entity import XArmControllerEntity
 
@@ -78,7 +78,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.info.error_code,
+        value_fn=lambda self: self.coordinator.arm.state.error_code,
         icon="mdi:alert",
     ),
     XArmControllerSensorEntityDescription(
@@ -88,7 +88,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.info.warn_code,
+        value_fn=lambda self: self.coordinator.arm.state.warn_code,
         icon="mdi:alert-circle",
     ),
 ]
@@ -96,21 +96,19 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: XArmControllerCoordinator,
+    entry: XArmControllerUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
 
-    coordinator: XArmControllerCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: XArmControllerUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     for sensor in SENSORS:
         LOGGER.debug(f"Adding sensor: {sensor.key}")
         async_add_entities(
             [
                 XArmControllerSensor(
-                    coordinator=coordinator,
-                    description=sensor,
-                    config_entry=entry
+                    coordinator=coordinator, description=sensor, config_entry=entry
                 )
             ]
         )
@@ -121,14 +119,14 @@ class XArmControllerSensor(XArmControllerEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: XArmControllerCoordinator,
+        coordinator: XArmControllerUpdateCoordinator,
         description: XArmControllerSensorEntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
         self.coordinator = coordinator
         self.entity_description = description
-        arm_info = coordinator.get_xarm_device().info
+        arm_info = coordinator.get_xarm_model().info
         self._attr_unique_id = f"{arm_info.sn}_{description.key}"
         super().__init__(coordinator=coordinator)
 

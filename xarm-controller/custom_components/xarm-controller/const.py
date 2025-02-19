@@ -15,12 +15,16 @@ ERROR_CODE = "error_code"
 WARN_CODE = "warn_code"
 GRIPPER_ERROR_CODE = "gripper_error_code"
 GRIPPER_SPEED = "gripper_speed"
+GRIPPER_POSITION = "gripper_position"
+COLLISION_SENSITIVITY = "collision_sensitivity"
 POS_X = "position_x"
 POS_Y = "position_y"
 POS_Z = "position_z"
 ROLL = "roll"
 PITCH = "pitch"
 YAW = "yaw"
+
+MOVE_ARM_EVENT = "xarm_move_arm"
 
 LOGGER = logging.getLogger(__package__)
 LOGGERFORHA = logging.getLogger(f"{__package__}_HA")
@@ -93,4 +97,22 @@ WARN_CODES = {
     13: "the instruction does not exist",
     14: "command has no solution",
     15: "modbus cmd full",
+}
+
+MODES = {
+    0: "position control mode",
+    1: "servo motion mode",
+    2: "joint teaching mode",
+    3: "cartesian teaching mode (invalid)",
+    4: "joint velocity control mode",
+    5: "cartesian velocity control mode",
+    6: "joint online trajectory planning mode",
+    7: "cartesian online trajectory planning mode"
+}
+
+STATES = {
+    1: "in motion",
+    2: "sleeping",
+    3: "suspended",
+    4: "stopping"
 }

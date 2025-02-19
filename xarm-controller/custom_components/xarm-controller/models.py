@@ -1,12 +1,16 @@
 """Data models that represent an Xarm Controller"""
 
-
+from abc import ABC
 from dataclasses import dataclass
-from typoing import List, Iterable
+from typing import List, Iterable
 
 
 from xarm.wrapper import XArmAPI
 
+
+def error_handler(model, result):
+    if result[0] != 0:
+        model.error_code = result[0]
 
 @dataclass
 class Gripper:
@@ -28,7 +32,7 @@ class Gripper:
         # self.set_gripper_position = xarm.set_gripper_position
         # self.set_gripper_speed = xarm.set_gripper_speed
 
-    def update(self):
+    def update(self, event):
         old_data = f"{self.__dict__}"
 
         self.error_code = self.xarm.get_gripper_err_code()
@@ -37,6 +41,10 @@ class Gripper:
 
         new_data = f"{self.__dict__}"
         return old_data != new_data
+
+    def set_gripper_position(self, position: int):
+        err = self.xarm_client.set_gripper_position(position, wait=True)
+        self.callback({"gripper_err_code": err})
 
 
 @dataclass
@@ -54,7 +62,7 @@ class ArmPosition:
         self.pitch = 0
         self.position = [0, 0, 0, 0, 0, 0]
 
-    def update(self):
+    def update(self, event):
         old_data = f"{self.__dict__}"
 
         self.position = self.xarm_client.position
@@ -86,12 +94,13 @@ class State:
     self_collision_params: Iterable  # :return: params, params[0]: self collision detection or not, params[1]: self collision tool type, params[2]: self collision model params
     servo_codes: list[list[int, int]]
     state: int
+    temperatures: list[int]
     warn_code: int
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
 
-    def update(self):
+    def update(self, event):
         old_data = f"{self.__dict__}"
 
         self.collision_sensitivity = self.xarm_client.collision_sensitivity
@@ -113,6 +122,11 @@ class State:
         new_data = f"{self.__dict__}"
 
         return old_data != new_data
+    
+    def set_collision_sensitivity(self, sensitivity: int):
+        if sensitivity < 1 or sensitivity > 5:
+            raise ValueError("Collision sensitivity must be between 1 and 5")
+        err, _ = self.xarm_client.set_collision_sensitivity(sensitivity)
 
 
 @dataclass
@@ -125,7 +139,7 @@ class Info:
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
 
-    def update(self):
+    def update(self, event):
         old_data = f"{self.__dict__}"
 
         self.device_type = self.xarm_client.device_type
@@ -141,8 +155,9 @@ class Info:
 @dataclass
 class XArmData:
 
-    def __init__(self, xarm_client: XArmAPI):
+    def __init__(self, xarm_client: XArmAPI, callback: callable):
         self.xarm_client = xarm_client
+        self.callback = callback
         self.gripper = Gripper(xarm_client)
         self.position = ArmPosition(xarm_client)
         self.state = State(xarm_client)
@@ -151,3 +166,6 @@ class XArmData:
     def update(self, data):
         send_event = False
         send_event = send_event | self.gripper.update()
+        send_event = send_event | self.position.update()
+        send_event = send_event | self.state.update()
+        send_event = send_event | self.info.update()
