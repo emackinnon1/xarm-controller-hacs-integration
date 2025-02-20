@@ -114,7 +114,7 @@ async def async_setup_entry(
         )
 
 
-class XArmControllerSensor(XArmControllerEntity, SensorEntity):
+class XArmControllerSensor(SensorEntity):
     """Representation of a XArm sensor."""
 
     def __init__(

@@ -61,7 +61,7 @@ class Gripper:
 @dataclass
 class ArmPosition:
     pitch: int
-    position: List[int, int, int, int, int, int]
+    position: List[int]
     position_x: int
     position_y: int
     position_z: int
@@ -102,7 +102,7 @@ class State:
     motor_brake_states: list[int]
     motor_enable_states: List[int]
     self_collision_params: Iterable  # :return: params, params[0]: self collision detection or not, params[1]: self collision tool type, params[2]: self collision model params
-    servo_codes: list[list[int, int]]
+    servo_codes: list[list[int]]
     state: int
     temperatures: list[int]
     warn_code: int
@@ -143,10 +143,14 @@ class Info:
     device_type: int
     serial: int
     version: int
-    version_number: tuple[int, int, int]
+    version_number: tuple[int]
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
+        self.device_type = self.xarm_client.device_type or 1
+        self.serial = self.xarm_client.sn or 123456789
+        self.version = self.xarm_client.version or 1
+        self.version_number = self.xarm_client.version_number or (1, 0, 0)
 
     def update(self, event):
         old_data = f"{self.__dict__}"

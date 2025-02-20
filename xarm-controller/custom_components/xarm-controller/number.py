@@ -134,7 +134,7 @@ async def async_setup_entry(
     LOGGER.debug("NUMBER::async_setup_entry DONE")
 
 
-class XArmControllerNumber(XArmControllerEntity, NumberEntity):
+class XArmControllerNumber(NumberEntity):
     """Defined the Number"""
 
     entity_description: XArmPositionNumberEntityDescription
