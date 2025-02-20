@@ -76,6 +76,7 @@ API_ERRORS = {
 }
 
 GRIPPER_ERROR_CODES = {
+    0: "Gripper No Error",
     9: "Gripper Current Detection Error",
     11: "Gripper Current Overlimit",
     12: "Gripper Speed Overlimit",

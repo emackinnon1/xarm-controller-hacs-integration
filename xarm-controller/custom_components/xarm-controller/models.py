@@ -4,6 +4,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import List, Iterable
 
+from .const import GRIPPER_ERROR_CODES
 
 from xarm.wrapper import XArmAPI
 
@@ -15,6 +16,7 @@ def error_handler(model, result):
 @dataclass
 class Gripper:
     error_code: int
+    error_msg: str
     position: int
     version: int
     # set_gripper_enable: Callable[..., int]
@@ -22,9 +24,10 @@ class Gripper:
     # set_gripper_position: Callable[..., int]
     # set_gripper_speed: Callable[..., int]
 
-    def __init__(self, xarm_client: XArmAPI):
+    def __init__(self, xarm_client: XArmAPI, callback: callable):
         self.xarm_client = xarm_client
         self.error_code = 0
+        self.error_msg = GRIPPER_ERROR_CODES[self.error_code]
         self.position = 0
         self.version = 0
         # self.set_gripper_enable = xarm.set_gripper_enable
@@ -38,13 +41,21 @@ class Gripper:
         self.error_code = self.xarm.get_gripper_err_code()
         self.position = self.xarm.get_gripper_position()
         self.version = self.xarm.get_gripper_version()
+        self.error_msg = self.interpret_error_code(self.error_code)
 
         new_data = f"{self.__dict__}"
         return old_data != new_data
 
     def set_gripper_position(self, position: int):
-        err = self.xarm_client.set_gripper_position(position, wait=True)
-        self.callback({"gripper_err_code": err})
+        self.interpret_error_code(self.xarm_client.set_gripper_mode(0))
+        self.interpret_error_code(self.xarm_client.set_gripper_enable(True))
+        self.interpret_error_code(self.xarm_client.set_gripper_position(position, wait=True))
+
+    def interpret_error_code(self, error_code):
+        if error_code in GRIPPER_ERROR_CODES:
+            self.callback({"gripper_err_code": error_code})
+            self.error_msg = GRIPPER_ERROR_CODES[error_code]
+        self.error_msg = "Unknown error"
 
 
 @dataclass
@@ -83,7 +94,6 @@ class State:
     collision_sensitivity: int
     connected: int
     error_code: int
-    gripper_err_code: int
     has_error: bool
     has_err_warn: bool
     has_warn: bool
@@ -106,7 +116,6 @@ class State:
         self.collision_sensitivity = self.xarm_client.collision_sensitivity
         self.connected = self.xarm_client.connected
         self.error_code = self.xarm_client.error_code
-        self.gripper_err_code = self.xarm_client.get_gripper_err_code()
         self.has_error = self.xarm_client.has_error
         self.has_err_warn = self.xarm_client.has_err_warn
         self.has_warn = self.xarm_client.has_warn
@@ -158,14 +167,26 @@ class XArmData:
     def __init__(self, xarm_client: XArmAPI, callback: callable):
         self.xarm_client = xarm_client
         self.callback = callback
-        self.gripper = Gripper(xarm_client)
-        self.position = ArmPosition(xarm_client)
-        self.state = State(xarm_client)
+        # self.gripper = Gripper(xarm_client)
+        # self.position = ArmPosition(xarm_client)
+        # self.state = State(xarm_client)
         self.info = Info(xarm_client)
 
     def update(self, data):
         send_event = False
-        send_event = send_event | self.gripper.update()
-        send_event = send_event | self.position.update()
-        send_event = send_event | self.state.update()
+        # send_event = send_event | self.gripper.update()
+        # send_event = send_event | self.position.update()
+        # send_event = send_event | self.state.update()
         send_event = send_event | self.info.update()
+
+
+def initialize(client: XArmAPI):
+    """callback to re-initialize the xArm"""
+
+    client.motion_enable(True)
+    client.clean_error()
+    client.set_mode(0)
+    client.set_state(0)
+    client.set_gripper_mode(0)
+    client.set_gripper_enable(True)
+    client.clean_gripper_error()

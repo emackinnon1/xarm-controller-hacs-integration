@@ -40,10 +40,10 @@ BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription, ...] = (
         translation_key=ERROR_CODE,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.error_code != 0,
-        extra_attributes=lambda self: {
-            "error_msg": self.coordinator.error_code_msg,
-            "error_code": self.coordinator.error_code_code,
+        is_on_fn=lambda device: device.coordinator.error_code != 0,
+        extra_attributes=lambda device: {
+            "error_msg": device.state.error_code_msg,
+            "error_code": device.state.error_code_code,
         },
     ),
     XArmControllerBinarySensorEntityDescription(
@@ -51,10 +51,10 @@ BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription, ...] = (
         translation_key=WARN_CODE,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.warn_code != 0,
-        extra_attributes=lambda self: {
-            "warn_msg": self.coordinator.warn_code_msg,
-            "warn_code": self.coordinator.warn_code_code,
+        is_on_fn=lambda device: device.coordinator.warn_code != 0,
+        extra_attributes=lambda device: {
+            "warn_msg": device.state.warn_code_msg,
+            "warn_code": device.state.warn_code_code,
         },
     ),
     XArmControllerBinarySensorEntityDescription(
@@ -62,10 +62,10 @@ BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription, ...] = (
         translation_key=GRIPPER_ERROR_CODE,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.gripper_error_code != 0,
-        extra_attributes=lambda self: {
-            "gripper_error_msg": self.coordinator.gripper_error_code_msg,
-            "gripper_error_code": self.coordinator.gripper_error_code,
+        is_on_fn=lambda device: device.gripper.error_code != 0,
+        extra_attributes=lambda device: {
+            "gripper_error_msg": device.gripper.error_msg,
+            "gripper_error_code": device.gripper.error_code,
         },
     ),
 )

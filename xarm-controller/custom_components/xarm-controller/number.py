@@ -99,7 +99,7 @@ NUMBERS = tuple[XArmPositionNumberEntityDescription, ...] = (
         key=GRIPPER_POSITION,
         native_unit_of_measurement=UnitOfSpeed.SPEED,
         device_class=NumberDeviceClass.SPEED,
-        icon="mdi:axis-z-rotate-clockwise",
+        icon="mdi:ind",
         mode=NumberMode.BOX,
         native_step=5,
         native_min_value=0,
