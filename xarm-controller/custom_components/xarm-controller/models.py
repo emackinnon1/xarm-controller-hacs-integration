@@ -98,7 +98,7 @@ class ArmPosition:
 @dataclass
 class State:
     collision_sensitivity: int
-    connected: int
+    connected: bool
     error_code: int
     has_error: bool
     has_err_warn: bool
@@ -116,7 +116,7 @@ class State:
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
         self.collision_sensitivity = 0
-        self.connected = False
+        self.connected = True
         self.error_code = 0
         self.has_error = False
         self.has_err_warn = False
