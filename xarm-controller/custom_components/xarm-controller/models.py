@@ -72,6 +72,12 @@ class ArmPosition:
         self.xarm_client = xarm_client
         self.pitch = 0
         self.position = [0, 0, 0, 0, 0, 0]
+        self.x = self.position[0]
+        self.y = self.position[1]
+        self.z = self.position[2]
+        self.roll = self.position[3]
+        self.pitch = self.position[4]
+        self.yaw = self.position[5]
 
     def update(self, event):
         old_data = f"{self.__dict__}"
@@ -109,29 +115,43 @@ class State:
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
-
-    def update(self, event):
-        old_data = f"{self.__dict__}"
-
-        self.collision_sensitivity = self.xarm_client.collision_sensitivity or 0
-        self.connected = self.xarm_client.connected or False
-        self.error_code = self.xarm_client.error_code or 0
-        self.has_error = self.xarm_client.has_error or False
-        self.has_err_warn = self.xarm_client.has_err_warn or False
-        self.has_warn = self.xarm_client.has_warn or False
+        self.collision_sensitivity = 0
+        self.connected = False
+        self.error_code = 0
+        self.has_error = False
+        self.has_err_warn = False
+        self.has_warn = False
         # self.is_moving = self.xarm_client.get_is_moving()
-        self.mode = self.xarm_client.mode or 0
+        self.mode = 0
         # self.motor_brake_states = self.xarm_client.motor_brake_states
         # self.motor_enable_states = self.xarm_client.motor_enable_states
         # self.self_collision_params = self.xarm_client.self_collision_params
         # self.servo_codes = self.xarm_client.servo_codes
-        self.state = self.xarm_client.state or 0
-        self.warn_code = self.xarm_client.warn_code or 0
+        self.state = 0
+        self.warn_code = 0
+
+    def update(self, event):
+        old_data = f"{self.__dict__}"
+
+        self.collision_sensitivity = self.xarm_client.collision_sensitivity
+        self.connected = self.xarm_client.connected
+        self.error_code = self.xarm_client.error_code
+        self.has_error = self.xarm_client.has_error
+        self.has_err_warn = self.xarm_client.has_err_warn
+        self.has_warn = self.xarm_client.has_warn
+        self.is_moving = self.xarm_client.get_is_moving()
+        self.mode = self.xarm_client.mode
+        self.motor_brake_states = self.xarm_client.motor_brake_states
+        self.motor_enable_states = self.xarm_client.motor_enable_states
+        self.self_collision_params = self.xarm_client.self_collision_params
+        self.servo_codes = self.xarm_client.servo_codes
+        self.state = self.xarm_client.state 
+        self.warn_code = self.xarm_client.warn_code
 
         new_data = f"{self.__dict__}"
 
         return old_data != new_data
-    
+
     def set_collision_sensitivity(self, sensitivity: int):
         if sensitivity < 1 or sensitivity > 5:
             raise ValueError("Collision sensitivity must be between 1 and 5")
@@ -177,7 +197,7 @@ class XArmData:
         self.callback = callback
         self.gripper = Gripper(xarm_client)
         self.position = ArmPosition(xarm_client)
-        # self.state = State(xarm_client)
+        self.state = State(xarm_client)
         self.info = Info(xarm_client)
 
     def update(self, data):

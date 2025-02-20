@@ -131,10 +131,15 @@ class XArmControllerSensor(SensorEntity):
         self._attr_unique_id = f"{arm_info.serial}_{description.key}"
         # super().__init__(coordinator=coordinator)
 
-    # @property
-    # def name(self):
-    #     """Return the name of the sensor."""
-    #     return f"{self.coordinator.data['name']} Sensor"
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self._attr_unique_id} Sensor"
+
+    @property
+    def available(self) -> bool:
+        """Is the number available"""
+        return self.coordinator.get_xarm_model().state.connected
 
     @property
     def connected(self):

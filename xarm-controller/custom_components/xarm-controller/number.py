@@ -156,7 +156,7 @@ class XArmControllerNumber(NumberEntity):
     @property
     def available(self) -> bool:
         """Is the number available"""
-        return self.coordinator.get_xarm_model().connected
+        return self.coordinator.get_xarm_model().state.connected
 
     @property
     def native_value(self) -> float | None:
