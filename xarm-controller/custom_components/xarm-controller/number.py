@@ -28,7 +28,7 @@ from .const import (
     COLLISION_SENSITIVITY,
 )
 from .coordinator import XArmControllerUpdateCoordinator
-from .entity import XArmControllerEntity
+# from .entity import XArmControllerEntity
 
 
 @dataclass
@@ -46,7 +46,7 @@ class XArmPositionNumberEntityDescription(
     """Editable (number) position entity description for XArm Controller."""
 
 
-NUMBERS = tuple[XArmPositionNumberEntityDescription, ...] = (
+NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
     XArmPositionNumberEntityDescription(
         key=POS_X,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
@@ -146,12 +146,12 @@ class XArmControllerNumber(NumberEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the number."""
-        super().__init__(coordinator=coordinator)
         self.coordinator = coordinator
         self.entity_description = description
         xarm_info = self.coordinator.get_xarm_model().info
         self._attr_unique_id = f"{xarm_info.serial}_{description.key}"
         self._attr_native_value = description.value_fn(coordinator.get_xarm_model())
+        # super().__init__(coordinator=coordinator)
 
     @property
     def available(self) -> bool:

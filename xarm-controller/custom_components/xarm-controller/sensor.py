@@ -11,14 +11,15 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorDeviceClass,
 )
-from homeassistant.core import HomeAssistant, UnitOfLength
+from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, UnitOfLength
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import XArmControllerUpdateCoordinator
 from .const import DOMAIN, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
-from .entity import XArmControllerEntity
+
+# from .entity import XArmControllerEntity
 
 
 @dataclass
@@ -48,7 +49,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.position.roll,
+        value_fn=lambda device: device.position.roll,
         icon="mdi:axis-x-rotate-counterclockwise",
     ),
     XArmControllerSensorEntityDescription(
@@ -58,7 +59,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.position.pitch,
+        value_fn=lambda device: device.position.pitch,
         icon="mdi:axis-y-rotate-counterclockwise",
     ),
     XArmControllerSensorEntityDescription(
@@ -68,7 +69,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.position.yaw,
+        value_fn=lambda device: device.position.yaw,
         icon="mdi:axis-z-rotate-counterclockwise",
     ),
     XArmControllerSensorEntityDescription(
@@ -78,7 +79,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.state.error_code,
+        value_fn=lambda device: device.state.error_code,
         icon="mdi:alert",
     ),
     XArmControllerSensorEntityDescription(
@@ -88,7 +89,7 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda self: self.coordinator.arm.state.warn_code,
+        value_fn=lambda device: device.state.warn_code,
         icon="mdi:alert-circle",
     ),
 ]
@@ -127,13 +128,13 @@ class XArmControllerSensor(SensorEntity):
         self.coordinator = coordinator
         self.entity_description = description
         arm_info = coordinator.get_xarm_model().info
-        self._attr_unique_id = f"{arm_info.sn}_{description.key}"
-        super().__init__(coordinator=coordinator)
+        self._attr_unique_id = f"{arm_info.serial}_{description.key}"
+        # super().__init__(coordinator=coordinator)
 
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return f"{self.coordinator.data['name']} Sensor"
+    # @property
+    # def name(self):
+    #     """Return the name of the sensor."""
+    #     return f"{self.coordinator.data['name']} Sensor"
 
     @property
     def connected(self):

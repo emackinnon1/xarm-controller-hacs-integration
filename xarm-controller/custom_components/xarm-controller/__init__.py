@@ -13,8 +13,8 @@ from xarm.wrapper import XArmAPI
 type XArmConfigEntry = ConfigEntry[XArmControllerUpdateCoordinator]
 
 PLATFORMS = [
-    Platform.BINARY_SENSOR,
-    Platform.BUTTON,
+    # Platform.BINARY_SENSOR,
+    # Platform.BUTTON,
     Platform.NUMBER,
     Platform.SENSOR,
 ]

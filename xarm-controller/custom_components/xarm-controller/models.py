@@ -24,7 +24,7 @@ class Gripper:
     # set_gripper_position: Callable[..., int]
     # set_gripper_speed: Callable[..., int]
 
-    def __init__(self, xarm_client: XArmAPI, callback: callable):
+    def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
         self.error_code = 0
         self.error_msg = GRIPPER_ERROR_CODES[self.error_code]
@@ -62,9 +62,9 @@ class Gripper:
 class ArmPosition:
     pitch: int
     position: List[int]
-    position_x: int
-    position_y: int
-    position_z: int
+    x: int
+    y: int
+    z: int
     roll: int
     yaw: int
 
@@ -77,9 +77,9 @@ class ArmPosition:
         old_data = f"{self.__dict__}"
 
         self.position = self.xarm_client.position
-        self.position_x = self.position[0]
-        self.position_y = self.position[1]
-        self.position_z = self.position[2]
+        self.x = self.position[0]
+        self.y = self.position[1]
+        self.z = self.position[2]
         self.roll = self.position[3]
         self.pitch = self.position[4]
         self.yaw = self.position[5]
@@ -147,10 +147,14 @@ class Info:
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
-        self.device_type = self.xarm_client.device_type or 1
-        self.serial = self.xarm_client.sn or 123456789
-        self.version = self.xarm_client.version or 1
-        self.version_number = self.xarm_client.version_number or (1, 0, 0)
+        self.device_type = 1
+        self.serial = 123456789
+        self.version = 1
+        self.version_number = (1, 0, 0)
+        # self.device_type = self.xarm_client.device_type or 1
+        # self.serial = self.xarm_client.sn or 123456789
+        # self.version = self.xarm_client.version or 1
+        # self.version_number = self.xarm_client.version_number or (1, 0, 0)
 
     def update(self, event):
         old_data = f"{self.__dict__}"

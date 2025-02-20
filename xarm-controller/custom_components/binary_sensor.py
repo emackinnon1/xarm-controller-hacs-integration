@@ -34,7 +34,7 @@ class XArmControllerBinarySensorEntityDescription(
     extra_attributes: Callable[..., dict] = lambda _: {}
 
 
-BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription, ...] = (
+BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription] = (
     XArmControllerBinarySensorEntityDescription(
         key=ERROR_CODE,
         translation_key=ERROR_CODE,

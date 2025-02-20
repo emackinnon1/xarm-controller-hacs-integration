@@ -39,11 +39,17 @@ class XArmDummyAPI:
         """Initialize the dummy xArm API."""
         self.host = host
 
+    @property
     def connect(self) -> None:
-        pass
+        return True
 
+    @property
     def disconnect(self) -> None:
-        pass
+        return True
+    
+    @property
+    def device_type(self) -> str:
+        return 12344
 
 
 class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
@@ -54,7 +60,7 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
     _updatedDevice: bool
 
     def __init__(
-        self, hass: HomeAssistant, *, entry: ConfigEntry, client: XArmAPI
+        self, hass: HomeAssistant, *, entry: ConfigEntry
     ) -> None:
         """Initialize the XArmControllerUpdateCoordinator."""
 
@@ -63,8 +69,7 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
         config = entry.data.copy()
         # self.xarm = XArmAPI(entry.data[CONF_HOST])
         self.xarm_client = XArmDummyAPI(entry.data[CONF_HOST])
-        self.xarm_data_model = XArmData(client=self.xarm_client, callback=self.event_handler)
-        self.model = entry.data[CONF_MODEL]
+        self.xarm_data_model = XArmData(xarm_client=self.xarm_client, callback=self.event_handler)
 
         self._updatedDevice = False
         self._shutdown = False
