@@ -113,20 +113,20 @@ class State:
     def update(self, event):
         old_data = f"{self.__dict__}"
 
-        self.collision_sensitivity = self.xarm_client.collision_sensitivity
-        self.connected = self.xarm_client.connected
-        self.error_code = self.xarm_client.error_code
-        self.has_error = self.xarm_client.has_error
-        self.has_err_warn = self.xarm_client.has_err_warn
-        self.has_warn = self.xarm_client.has_warn
-        self.is_moving = self.xarm_client.get_is_moving()
-        self.mode = self.xarm_client.mode
-        self.motor_brake_states = self.xarm_client.motor_brake_states
-        self.motor_enable_states = self.xarm_client.motor_enable_states
-        self.self_collision_params = self.xarm_client.self_collision_params
-        self.servo_codes = self.xarm_client.servo_codes
-        self.state = self.xarm_client.state
-        self.warn_code = self.xarm_client.warn_code
+        self.collision_sensitivity = self.xarm_client.collision_sensitivity or 0
+        self.connected = self.xarm_client.connected or False
+        self.error_code = self.xarm_client.error_code or 0
+        self.has_error = self.xarm_client.has_error or False
+        self.has_err_warn = self.xarm_client.has_err_warn or False
+        self.has_warn = self.xarm_client.has_warn or False
+        # self.is_moving = self.xarm_client.get_is_moving()
+        self.mode = self.xarm_client.mode or 0
+        # self.motor_brake_states = self.xarm_client.motor_brake_states
+        # self.motor_enable_states = self.xarm_client.motor_enable_states
+        # self.self_collision_params = self.xarm_client.self_collision_params
+        # self.servo_codes = self.xarm_client.servo_codes
+        self.state = self.xarm_client.state or 0
+        self.warn_code = self.xarm_client.warn_code or 0
 
         new_data = f"{self.__dict__}"
 
@@ -167,16 +167,16 @@ class XArmData:
     def __init__(self, xarm_client: XArmAPI, callback: callable):
         self.xarm_client = xarm_client
         self.callback = callback
-        # self.gripper = Gripper(xarm_client)
-        # self.position = ArmPosition(xarm_client)
+        self.gripper = Gripper(xarm_client)
+        self.position = ArmPosition(xarm_client)
         # self.state = State(xarm_client)
         self.info = Info(xarm_client)
 
     def update(self, data):
         send_event = False
-        # send_event = send_event | self.gripper.update()
-        # send_event = send_event | self.position.update()
-        # send_event = send_event | self.state.update()
+        send_event = send_event | self.gripper.update()
+        send_event = send_event | self.position.update()
+        send_event = send_event | self.state.update()
         send_event = send_event | self.info.update()
 
 

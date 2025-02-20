@@ -63,7 +63,7 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
         config = entry.data.copy()
         # self.xarm = XArmAPI(entry.data[CONF_HOST])
         self.xarm_client = XArmDummyAPI(entry.data[CONF_HOST])
-        self.xarm_data_model = XArmData(client=self.xarm_client, callback=self.)
+        self.xarm_data_model = XArmData(client=self.xarm_client, callback=self.event_handler)
         self.model = entry.data[CONF_MODEL]
 
         self._updatedDevice = False
