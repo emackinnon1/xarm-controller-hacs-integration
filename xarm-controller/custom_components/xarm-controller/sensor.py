@@ -149,12 +149,14 @@ class XArmControllerSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         """Return the state attributes."""
-        return self.entity_description.extra_attributes(self)
+        return self.entity_description.extra_attributes(
+            self.coordinator.get_xarm_model()
+        )
 
     @property
     def native_value(self) -> datetime | StateType:
         """Return the state of the sensor."""
-        return self.entity_description.value_fn(self)
+        return self.entity_description.value_fn(self.coordinator.get_xarm_model())
 
     @property
     def icon(self) -> str | None:

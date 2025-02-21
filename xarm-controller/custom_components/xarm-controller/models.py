@@ -100,6 +100,7 @@ class State:
     collision_sensitivity: int
     connected: bool
     error_code: int
+    error_code_msg: str
     has_error: bool
     has_err_warn: bool
     has_warn: bool
@@ -118,6 +119,7 @@ class State:
         self.collision_sensitivity = 0
         self.connected = True
         self.error_code = 0
+        self.error_code_msg = ''
         self.has_error = False
         self.has_err_warn = False
         self.has_warn = False
@@ -129,6 +131,7 @@ class State:
         # self.servo_codes = self.xarm_client.servo_codes
         self.state = 0
         self.warn_code = 0
+        self.warn_code_msg = ''
 
     def update(self, event):
         old_data = f"{self.__dict__}"
@@ -147,6 +150,7 @@ class State:
         self.servo_codes = self.xarm_client.servo_codes
         self.state = self.xarm_client.state 
         self.warn_code = self.xarm_client.warn_code
+        # self.warn_code_msg = self.xarm_client.warn_code_msg
 
         new_data = f"{self.__dict__}"
 
