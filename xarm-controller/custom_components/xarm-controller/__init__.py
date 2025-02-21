@@ -13,7 +13,7 @@ from xarm.wrapper import XArmAPI
 type XArmConfigEntry = ConfigEntry[XArmControllerUpdateCoordinator]
 
 PLATFORMS = [
-    # Platform.BINARY_SENSOR,
+    Platform.BINARY_SENSOR,
     # Platform.BUTTON,
     Platform.NUMBER,
     Platform.SENSOR,
@@ -59,25 +59,20 @@ async def async_setup_entry(
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    entry.async_on_unload(entry.add_update_listener(update_listener))
-
-    async def move_xarm(call: core.ServiceCall):
-        """Handle the service call."""
-        if check_service_call_payload(call) is False:
-            return
-        hass.bus.fire(MOVE_ARM_EVENT, call.data)
+    # async def move_xarm(call: core.ServiceCall):
+    #     """Handle the service call."""
+    #     if check_service_call_payload(call) is False:
+    #         return
+    #     hass.bus.fire(MOVE_ARM_EVENT, call.data)
 
     # Register the service with Home Assistant
-    hass.services.async_register(
-        DOMAIN, "move_xarm", move_xarm  # Service name  # Handler function
-    )
+    # hass.services.async_register(
+    #     DOMAIN, "move_xarm", move_xarm  # Service name  # Handler function
+    # )
+
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     return True
-
-
-async def update_listener(hass: core.HomeAssistant, entry: XArmConfigEntry) -> None:
-    """Handle options update."""
-    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: core.HomeAssistant, entry: XArmConfigEntry) -> bool:
@@ -89,3 +84,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the XARM controller component from yaml configuration."""
     hass.data.setdefault(DOMAIN, {})
     return True
+
+
+async def async_reload_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the config entry when it changed."""
+    LOGGER.debug("Async Setup Reload")
+    await hass.config_entries.async_reload(entry.entry_id)
