@@ -72,26 +72,6 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
         value_fn=lambda device: device.position.yaw,
         icon="mdi:axis-z-rotate-counterclockwise",
     ),
-    XArmControllerSensorEntityDescription(
-        key="error_code",
-        translation_key="error_code",
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda device: device.state.error_code,
-        icon="mdi:alert",
-    ),
-    XArmControllerSensorEntityDescription(
-        key="warn_code",
-        translation_key="warn_code",
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda device: device.state.warn_code,
-        icon="mdi:alert-circle",
-    ),
 ]
 
 
