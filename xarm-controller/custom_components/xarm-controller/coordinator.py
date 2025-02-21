@@ -103,7 +103,7 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
     def shutdown(self) -> None:
         """Halt the MQTT listener thread"""
         self._shutdown = True
-        self.xarm.disconnect()
+        self.xarm_client.disconnect()
 
     def _service_call_is_for_me(self, data: dict) -> bool:
         """Check if the service call is for this device."""
@@ -164,7 +164,6 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
         """Update the position data of the xArm."""
         self.get_model().position.update()
         self._update_data()
-        
 
     def register_callbacks(self) -> None:
         """Register the callbacks for the xArm."""
