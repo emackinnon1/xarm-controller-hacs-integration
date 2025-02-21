@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, ERROR_CODE, WARN_CODE, GRIPPER_ERROR_CODE, LOGGER
 from .coordinator import XArmControllerUpdateCoordinator
-from .entity import XArmControllerEntity
+# from .entity import XArmControllerEntity
 
 
 @dataclass
@@ -34,16 +34,16 @@ class XArmControllerBinarySensorEntityDescription(
     extra_attributes: Callable[..., dict] = lambda _: {}
 
 
-BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription] = (
+BINARY_SENSORS: tuple[XArmControllerBinarySensorEntityDescription] = (
     XArmControllerBinarySensorEntityDescription(
         key=ERROR_CODE,
         translation_key=ERROR_CODE,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda device: device.coordinator.error_code != 0,
+        is_on_fn=lambda device: device.state.error_code != 0,
         extra_attributes=lambda device: {
             "error_msg": device.state.error_code_msg,
-            "error_code": device.state.error_code_code,
+            "error_code": device.state.error_code,
         },
     ),
     XArmControllerBinarySensorEntityDescription(
@@ -51,10 +51,10 @@ BINARY_SENSORS = tuple[XArmControllerBinarySensorEntityDescription] = (
         translation_key=WARN_CODE,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda device: device.coordinator.warn_code != 0,
+        is_on_fn=lambda device: device.state.warn_code != 0,
         extra_attributes=lambda device: {
             "warn_msg": device.state.warn_code_msg,
-            "warn_code": device.state.warn_code_code,
+            "warn_code": device.state.warn_code,
         },
     ),
     XArmControllerBinarySensorEntityDescription(
@@ -84,7 +84,7 @@ async def async_setup_entry(
             async_add_entities([XArmControllerBinarySensor(coordinator, sensor, entry)])
 
 
-class XArmControllerBinarySensor(XArmControllerEntity, BinarySensorEntity):
+class XArmControllerBinarySensor(BinarySensorEntity):
     """Representation of a XArm Controller binary sensor that is updated via the XArmAPI."""
 
     def __init__(
@@ -94,7 +94,7 @@ class XArmControllerBinarySensor(XArmControllerEntity, BinarySensorEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator=coordinator)
+        # super().__init__(coordinator=coordinator)
         self.coordinator = coordinator
         self.entity_description = description
         xarm_info = self.coordinator.get_xarm_model().info
@@ -103,9 +103,11 @@ class XArmControllerBinarySensor(XArmControllerEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool:
         """Return if binary sensor is on."""
-        return self.entity_description.is_on_fn(self)
+        return self.entity_description.is_on_fn(self.coordinator.get_xarm_model())
 
     @property
     def extra_state_attributes(self) -> dict:
         """Return the state attributes."""
-        return self.entity_description.extra_attributes(self)
+        return self.entity_description.extra_attributes(
+            self.coordinator.get_xarm_model()
+        )
