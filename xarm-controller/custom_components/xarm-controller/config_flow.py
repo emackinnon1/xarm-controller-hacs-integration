@@ -4,7 +4,7 @@ import voluptuous as vol
 from typing import Any, Dict, Optional
 from homeassistant import config_entries, core
 from homeassistant import data_entry_flow
-from homeassistant.const import CONF_HOST, CONF_MODEL, ATTR_SERIAL_NUMBER
+from homeassistant.const import CONF_HOST, CONF_MODEL, ATTR_SERIAL_NUMBER, CONF_NAME
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     SelectOptionDict,
@@ -40,12 +40,7 @@ model_options = [
 HOST_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_HOST): cv.string,
-        # vol.Required(CONF_MODEL): SelectSelector(
-        #     SelectSelectorConfig(
-        #         options=model_options,
-        #         mode=SelectSelectorMode.DROPDOWN,
-        #     )
-        # ),
+        vol.Required(CONF_NAME): cv.string
     }
 )
 
@@ -89,8 +84,6 @@ class XArmControllerConfigFlow(
                 xarm = XArmAPI(
                     user_input[CONF_HOST],
                     do_not_open=True,
-                    enable_report=True,
-                    report_type="rich",
                 )
             except Exception as exc:
                 errors["base"] = "connection_error"
@@ -102,7 +95,9 @@ class XArmControllerConfigFlow(
                 # User is done adding host name, create the config entry.
                 self.data[ATTR_SERIAL_NUMBER] = xarm.sn
                 self.data["device_type"] = xarm.device_type
-                return self.async_create_entry(title="XArm Controller", data=self.data)
+                return self.async_create_entry(
+                    title=f"XArm Controller{user_input[CONF_NAME]}", data=self.data
+                )
 
         return self.async_show_form(
             step_id="user", data_schema=HOST_SCHEMA, errors=errors
