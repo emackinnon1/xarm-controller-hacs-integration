@@ -14,7 +14,7 @@ type XArmConfigEntry = ConfigEntry[XArmControllerUpdateCoordinator]
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
-    # Platform.BUTTON,
+    Platform.BUTTON,
     Platform.NUMBER,
     Platform.SENSOR,
 ]
