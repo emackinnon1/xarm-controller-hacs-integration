@@ -30,26 +30,7 @@ from .const import (
     STATES,
     MOVE_ARM_EVENT
 )
-
-
-class XArmDummyAPI:
-    """Dummy class to simulate xArm API."""
-
-    def __init__(self, host: str) -> None:
-        """Initialize the dummy xArm API."""
-        self.host = host
-
-    @property
-    def connect(self) -> None:
-        return True
-
-    @property
-    def disconnect(self) -> None:
-        return True
-    
-    @property
-    def device_type(self) -> str:
-        return 12344
+from .dummy import XArmDummyAPI
 
 
 class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
@@ -68,17 +49,17 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
         self._entry = entry
         config = entry.data.copy()
         # self.xarm = XArmAPI(entry.data[CONF_HOST])
-        self.xarm_client = XArmDummyAPI(entry.data[CONF_HOST])
-        self.xarm_data_model = XArmData(xarm_client=self.xarm_client, callback=self.event_handler)
 
         self._updatedDevice = False
         self._shutdown = False
-        self.data = self.get_xarm_model()
+        # self.data = self.get_xarm_model()
         # Pass LOGGERFORHA logger into HA as otherwise it generates a debug output line every single time we tell it we have an update
         # which fills the logs and makes the useful logging data less accessible.
         super().__init__(hass=hass, config_entry=entry, logger=LOGGERFORHA, name=DOMAIN)
 
         self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
+        self.xarm_client = XArmDummyAPI(self)
+        self.xarm_data_model = XArmData(xarm_client=self.xarm_client, callback=self.event_handler)
 
     def get_xarm_model(self) -> XArmData:
         """Return the XArm device."""
@@ -149,9 +130,9 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
         elif "collision_sensitivity" in event:
             self._update_state_data()
 
-    def _update_data(self) -> None:
+    def update_method(self) -> None:
         """Update the device data of the xArm."""
-        device = self.get_model()
+        device = self.get_xarm_model()
         try:
             # use parent class method to update data
             self.async_set_updated_data(device)
@@ -163,7 +144,12 @@ class XArmControllerUpdateCoordinator(DataUpdateCoordinator[XArmData]):
     def _update_position_data(self) -> None:
         """Update the position data of the xArm."""
         self.get_model().position.update()
-        self._update_data()
+        self.update_method()
+
+    def _update_state_data(self) -> None:
+        """Update the position data of the xArm."""
+        self.get_model().position.update()
+        self.update_method()
 
     def register_callbacks(self) -> None:
         """Register the callbacks for the xArm."""
