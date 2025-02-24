@@ -24,6 +24,9 @@ class Gripper:
     # set_gripper_mode: Callable[..., int]
     # set_gripper_position: Callable[..., int]
     # set_gripper_speed: Callable[..., int]
+    # close_lite6_gripper: Callable[..., int]
+    # open_lite6_gripper: Callable[..., int]
+    # stop_lite6_gripper: Callable[..., int]
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
@@ -35,6 +38,9 @@ class Gripper:
         # self.set_gripper_mode = xarm.set_gripper_mode
         # self.set_gripper_position = xarm.set_gripper_position
         # self.set_gripper_speed = xarm.set_gripper_speed
+        # self.close_lite6_gripper = xarm.close_lite6_gripper
+        # self.open_lite6_gripper = xarm.open_lite6_gripper
+        # self.stop_lite6_gripper = xarm.stop_lite6_gripper
 
     def update(self):
         old_data = f"{self.__dict__}"
@@ -110,11 +116,13 @@ class ArmPosition:
 class State:
     collision_sensitivity: int
     connected: bool
+    counter: int
     error_code: int
     error_code_msg: str
     has_error: bool
     has_err_warn: bool
     has_warn: bool
+    is_lite6: bool
     is_moving: int
     mode: int
     motor_brake_states: list[int]
@@ -129,11 +137,13 @@ class State:
         self.xarm_client = xarm_client
         self.collision_sensitivity = 0
         self.connected = True
+        self.counter = 0
         self.error_code = 0
         self.error_code_msg = ""
         self.has_error = False
         self.has_err_warn = False
         self.has_warn = False
+        self.is_lite6 = False
         # self.is_moving = self.xarm_client.get_is_moving()
         self.mode = 0
         # self.motor_brake_states = self.xarm_client.motor_brake_states
