@@ -96,7 +96,7 @@ class XArmControllerConfigFlow(
                 self.data[ATTR_SERIAL_NUMBER] = xarm.sn
                 self.data["device_type"] = xarm.device_type
                 return self.async_create_entry(
-                    title=f"XArm Controller{user_input[CONF_NAME]}", data=self.data
+                    title=f"XArm Controller {user_input[CONF_NAME]}", data=self.data
                 )
 
         return self.async_show_form(
