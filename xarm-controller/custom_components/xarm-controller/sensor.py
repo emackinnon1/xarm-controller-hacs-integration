@@ -13,7 +13,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, UnitOfLength
+from homeassistant.const import EntityCategory, UnitOfLength, DEGREE
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import XArmControllerUpdateCoordinator
@@ -45,8 +45,8 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     XArmControllerSensorEntityDescription(
         key=ROLL,
         translation_key=ROLL,
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda device: device.position.roll,
@@ -55,8 +55,8 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     XArmControllerSensorEntityDescription(
         key=PITCH,
         translation_key=PITCH,
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda device: device.position.pitch,
@@ -65,12 +65,21 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     XArmControllerSensorEntityDescription(
         key=YAW,
         translation_key="yaw",
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda device: device.position.yaw,
         icon="mdi:axis-z-rotate-counterclockwise",
+    ),
+    XArmControllerSensorEntityDescription(
+        key="state",
+        translation_key="state",
+        # device_class=SensorDeviceClass.DISTANCE,
+        # state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.state.state,
+        icon="mdi:state-machine",
     ),
 ]
 
@@ -114,7 +123,7 @@ class XArmControllerSensor(SensorEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self._attr_unique_id} Sensor"
+        return f"Xarm {self._attr_unique_id} {self.entity_description.key} Sensor"
 
     @property
     def available(self) -> bool:
@@ -141,8 +150,4 @@ class XArmControllerSensor(SensorEntity):
     @property
     def icon(self) -> str | None:
         """Return a dynamic icon if needed"""
-        return (
-            self.entity_description.icon_fn(self)
-            if self.entity_description.icon_fn
-            else self.entity_description.icon
-        )
+        return self.entity_description.icon

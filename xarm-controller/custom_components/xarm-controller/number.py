@@ -32,7 +32,7 @@ from .coordinator import XArmControllerUpdateCoordinator
 
 
 @dataclass
-class XArmControllerPositionEntityMixin:
+class XArmControllerNumberEntityMixin:
     """Mixin for XArm Controller position."""
 
     value_fn: Callable[..., any]
@@ -40,14 +40,14 @@ class XArmControllerPositionEntityMixin:
 
 
 @dataclass
-class XArmPositionNumberEntityDescription(
-    NumberEntityDescription, XArmControllerPositionEntityMixin
+class XArmControllerNumberEntityDescription(
+    NumberEntityDescription, XArmControllerNumberEntityMixin
 ):
     """Editable (number) position entity description for XArm Controller."""
 
 
-NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
-    XArmPositionNumberEntityDescription(
+NUMBERS: tuple[XArmControllerNumberEntityDescription, ...] = (
+    XArmControllerNumberEntityDescription(
         key=POS_X,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
@@ -57,9 +57,9 @@ NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
         value_fn=lambda device: device.position.x,
-        set_value_fn=lambda device, value: device.set_position(x=value),
+        set_value_fn=lambda device, value: device.position.set_position(x=value),
     ),
-    XArmPositionNumberEntityDescription(
+    XArmControllerNumberEntityDescription(
         key=POS_Y,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
@@ -69,9 +69,9 @@ NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
         value_fn=lambda device: device.position.y,
-        set_value_fn=lambda device, value: device.set_position(y=value),
+        set_value_fn=lambda device, value: device.position.set_position(y=value),
     ),
-    XArmPositionNumberEntityDescription(
+    XArmControllerNumberEntityDescription(
         key=POS_Z,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
@@ -81,9 +81,9 @@ NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
         value_fn=lambda device: device.position.z,
-        set_value_fn=lambda device, value: device.set_position(z=value),
+        set_value_fn=lambda device, value: device.position.set_position(z=value),
     ),
-    # XArmPositionNumberEntityDescription(
+    # XArmControllerNumberEntityDescription(
     #     key=GRIPPER_SPEED,
     #     native_unit_of_measurement=UnitOfSpeed.SPEED,
     #     device_class=NumberDeviceClass.SPEED,
@@ -95,7 +95,7 @@ NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
     #     value_fn=lambda device: device.position,
     #     set_value_fn=lambda device, speed: device.set_gripper_speed(speed),
     # ),
-    # XArmPositionNumberEntityDescription(
+    # XArmControllerNumberEntityDescription(
     #     key=GRIPPER_POSITION,
     #     native_unit_of_measurement=UnitOfSpeed.SPEED,
     #     device_class=NumberDeviceClass.SPEED,
@@ -107,7 +107,7 @@ NUMBERS: tuple[XArmPositionNumberEntityDescription, ...] = (
     #     value_fn=lambda device: device.gripper.position,
     #     set_value_fn=lambda device, speed: device.set_gripper_speed(speed),
     # ),
-    # XArmPositionNumberEntityDescription(
+    # XArmControllerNumberEntityDescription(
     #     key=COLLISION_SENSITIVITY,
     #     native_unit_of_measurement=UnitOfSpeed.SPEED,
     #     device_class=NumberDeviceClass.SPEED,
@@ -135,14 +135,14 @@ async def async_setup_entry(
 
 
 class XArmControllerNumber(NumberEntity):
-    """Defined the Number"""
+    """Define the Number."""
 
-    entity_description: XArmPositionNumberEntityDescription
+    entity_description: XArmControllerNumberEntityDescription
 
     def __init__(
         self,
         coordinator: XArmControllerUpdateCoordinator,
-        description: XArmPositionNumberEntityDescription,
+        description: XArmControllerNumberEntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the number."""
@@ -154,6 +154,16 @@ class XArmControllerNumber(NumberEntity):
         # super().__init__(coordinator=coordinator)
 
     @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"Xarm {self._attr_unique_id} {self.entity_description.key} Number"
+
+    @property
+    def icon(self) -> str | None:
+        """Return a dynamic icon."""
+        return self.entity_description.icon
+
+    @property
     def available(self) -> bool:
         """Is the number available"""
         return self.coordinator.get_xarm_model().state.connected
@@ -163,7 +173,7 @@ class XArmControllerNumber(NumberEntity):
         """Return the value reported by the number."""
         return self.entity_description.value_fn(self.coordinator.get_xarm_model())
 
-    @native_value.setter
+    # @native_value.setter
     def set_native_value(self, value: float) -> None:
         """Update the current value."""
-        self.entity_description.set_value_fn(self.coordinator.get_xarm_model(), value)
+        self.entity_description.set_value_fn and self.entity_description.set_value_fn(self.coordinator.get_xarm_model(), value)

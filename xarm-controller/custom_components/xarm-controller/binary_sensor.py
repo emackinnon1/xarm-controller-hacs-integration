@@ -101,6 +101,11 @@ class XArmControllerBinarySensor(BinarySensorEntity):
         self._attr_unique_id = f"{xarm_info.serial}_{description.key}"
 
     @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"Xarm {self._attr_unique_id} {self.entity_description.key} Binary Sensor"
+
+    @property
     def is_on(self) -> bool:
         """Return if binary sensor is on."""
         return self.entity_description.is_on_fn(self.coordinator.get_xarm_model())

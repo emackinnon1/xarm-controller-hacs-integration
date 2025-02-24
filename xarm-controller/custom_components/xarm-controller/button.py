@@ -86,7 +86,7 @@ class XArmControllerButton(ButtonEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self._attr_unique_id} {self.entity_description.name} Button"
+        return f"Xarm {self._attr_unique_id} {self.entity_description.key} Button"
 
     @property
     def icon(self) -> str | None:
