@@ -4,7 +4,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import List, Iterable
 
-from .const import GRIPPER_ERROR_CODES
+from .const import GRIPPER_ERROR_CODES, LOGGER, LOGGERFORHA
 
 from xarm.wrapper import XArmAPI
 
@@ -12,6 +12,7 @@ from xarm.wrapper import XArmAPI
 def error_handler(model, result):
     if result[0] != 0:
         model.error_code = result[0]
+
 
 @dataclass
 class Gripper:
@@ -35,7 +36,7 @@ class Gripper:
         # self.set_gripper_position = xarm.set_gripper_position
         # self.set_gripper_speed = xarm.set_gripper_speed
 
-    def update(self, event):
+    def update(self):
         old_data = f"{self.__dict__}"
 
         self.error_code = self.xarm.get_gripper_err_code()
@@ -49,7 +50,9 @@ class Gripper:
     def set_gripper_position(self, position: int):
         self.interpret_error_code(self.xarm_client.set_gripper_mode(0))
         self.interpret_error_code(self.xarm_client.set_gripper_enable(True))
-        self.interpret_error_code(self.xarm_client.set_gripper_position(position, wait=True))
+        self.interpret_error_code(
+            self.xarm_client.set_gripper_position(position, wait=True)
+        )
 
     def interpret_error_code(self, error_code):
         if error_code in GRIPPER_ERROR_CODES:
@@ -79,7 +82,7 @@ class ArmPosition:
         self.pitch = self.position[4]
         self.yaw = self.position[5]
 
-    def update(self, event):
+    def update(self):
         old_data = f"{self.__dict__}"
 
         self.position = self.xarm_client.position
@@ -93,6 +96,14 @@ class ArmPosition:
         new_data = f"{self.__dict__}"
 
         return old_data != new_data
+
+    def set_position(self, x: int = None, y: int = None, z: int = None):
+        if x is not None:
+            self.xarm_client.set_position(x=x)
+        if y is not None:
+            self.xarm_client.set_position(y=y)
+        if z is not None:
+            self.xarm_client.set_position(z=z)
 
 
 @dataclass
@@ -119,7 +130,7 @@ class State:
         self.collision_sensitivity = 0
         self.connected = True
         self.error_code = 0
-        self.error_code_msg = ''
+        self.error_code_msg = ""
         self.has_error = False
         self.has_err_warn = False
         self.has_warn = False
@@ -129,11 +140,11 @@ class State:
         # self.motor_enable_states = self.xarm_client.motor_enable_states
         # self.self_collision_params = self.xarm_client.self_collision_params
         # self.servo_codes = self.xarm_client.servo_codes
-        self.state = 0
+        self.state = 1
         self.warn_code = 0
-        self.warn_code_msg = ''
+        self.warn_code_msg = ""
 
-    def update(self, event):
+    def update(self):
         old_data = f"{self.__dict__}"
 
         self.collision_sensitivity = self.xarm_client.collision_sensitivity
@@ -148,7 +159,7 @@ class State:
         self.motor_enable_states = self.xarm_client.motor_enable_states
         self.self_collision_params = self.xarm_client.self_collision_params
         self.servo_codes = self.xarm_client.servo_codes
-        self.state = self.xarm_client.state 
+        self.state = self.xarm_client.state
         self.warn_code = self.xarm_client.warn_code
         # self.warn_code_msg = self.xarm_client.warn_code_msg
 
@@ -180,7 +191,7 @@ class Info:
         # self.version = self.xarm_client.version or 1
         # self.version_number = self.xarm_client.version_number or (1, 0, 0)
 
-    def update(self, event):
+    def update(self):
         old_data = f"{self.__dict__}"
 
         self.device_type = self.xarm_client.device_type
@@ -210,6 +221,16 @@ class XArmData:
         send_event = send_event | self.position.update()
         send_event = send_event | self.state.update()
         send_event = send_event | self.info.update()
+
+    def clear_errors(self):
+        self.xarm_client.clear_errors()
+
+    def emergency_stop(self):
+        self.xarm_client.emergency_stop()
+        LOGGER.debug("Emergency stop called")
+
+    def go_home(self):
+        self.xarm_client.move_gohome()
 
 
 def initialize(client: XArmAPI):
