@@ -65,3 +65,9 @@ class XArmDummyAPI:
     def close_gripper(self):
         self.coordinator.get_xarm_model().gripper.position = 0
 
+    def get_gripper_speed(self):
+        return self.coordinator.get_xarm_model().state.gripper_speed
+    
+    def get_gripper_position(self):
+        return self.coordinator.get_xarm_model().gripper.position
+

@@ -17,7 +17,19 @@ from homeassistant.const import EntityCategory, UnitOfLength, DEGREE
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import XArmControllerUpdateCoordinator
-from .const import DOMAIN, POS_X, POS_Y, POS_Z, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
+from .const import (
+    DOMAIN, 
+    POS_X, 
+    POS_Y, 
+    POS_Z, 
+    ROLL, 
+    PITCH, 
+    YAW, 
+    GRIPPER_SPEED,
+    GRIPPER_POSITION,
+    ERROR_CODE, 
+    LOGGER
+)
 
 # from .entity import XArmControllerEntity
 
@@ -98,12 +110,23 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     ),
     XArmControllerSensorEntityDescription(
         key="state",
-        translation_key="state",
         # device_class=SensorDeviceClass.DISTANCE,
         # state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda device: device.state.state,
         icon="mdi:state-machine",
+    ),
+    XArmControllerSensorEntityDescription(
+        key=GRIPPER_SPEED,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.gripper.speed,
+        icon="mdi:robot-industrial"
+    ),
+    XArmControllerSensorEntityDescription(
+        key=GRIPPER_POSITION,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.gripper.position,
+        icon="mdi:alert-circle-outline"
     ),
 ]
 

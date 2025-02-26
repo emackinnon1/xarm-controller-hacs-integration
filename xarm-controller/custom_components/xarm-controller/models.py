@@ -20,14 +20,17 @@ from xarm.wrapper import XArmAPI
 
 @dataclass
 class Gripper:
+    """Data model for the Xarm Controller gripper."""
+
     error_code: int
     error_msg: str
+    speed: int
     position: int
     version: int
     # set_gripper_enable: Callable[..., int]
     # set_gripper_mode: Callable[..., int]
-    # set_gripper_position: Callable[..., int]
-    # set_gripper_speed: Callable[..., int]
+    # set_position: Callable[..., int]
+    # set_speed: Callable[..., int]
     # close_lite6_gripper: Callable[..., int]
     # open_lite6_gripper: Callable[..., int]
     # stop_lite6_gripper: Callable[..., int]
@@ -35,13 +38,14 @@ class Gripper:
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
         self.error_code = 0
-        self.error_msg = GRIPPER_ERROR_CODES[self.error_code]
+        self.error_msg = self._interpret_error_code(self.error_code)
+        self.speed = 0
         self.position = 0
         self.version = 0
         # self.set_gripper_enable = xarm.set_gripper_enable
         # self.set_gripper_mode = xarm.set_gripper_mode
-        # self.set_gripper_position = xarm.set_gripper_position
-        # self.set_gripper_speed = xarm.set_gripper_speed
+        # self.set_position = xarm.set_position
+        # self.set_speed = xarm.set_speed
         # self.close_lite6_gripper = xarm.close_lite6_gripper
         # self.open_lite6_gripper = xarm.open_lite6_gripper
         # self.stop_lite6_gripper = xarm.stop_lite6_gripper
@@ -49,22 +53,23 @@ class Gripper:
     def update(self):
         old_data = f"{self.__dict__}"
 
-        self.error_code = self.xarm.get_gripper_err_code()
+        self.error_code = self.xarm_client.get_gripper_err_code()
         self.error_msg = self.interpret_error_code(self.error_code)
-        self.position = self.xarm.get_gripper_position()
-        self.version = self.xarm.get_gripper_version()
+        self.speed = self.xarm_client.get_speed()
+        self.position = self.xarm_client.get_position()
+        self.version = self.xarm_client.get_gripper_version()
 
         new_data = f"{self.__dict__}"
         return old_data != new_data
 
-    def set_gripper_position(self, position: int):
+    def set_position(self, position: int):
         self.interpret_error_code(self.xarm_client.set_gripper_mode(0))
         self.interpret_error_code(self.xarm_client.set_gripper_enable(True))
         self.interpret_error_code(
-            self.xarm_client.set_gripper_position(position, wait=True)
+            self.xarm_client.set_position(position, wait=True)
         )
 
-    def interpret_error_code(self, error_code):
+    def _interpret_error_code(self, error_code):
         if error_code in GRIPPER_ERROR_CODES:
             self.callback({"gripper_err_code": error_code})
             self.error_msg = GRIPPER_ERROR_CODES[error_code]
@@ -75,18 +80,29 @@ class Gripper:
         if is_lite6:
             self.xarm_client.open_lite6_gripper()
         else:
-            self.xarm_client.set_gripper_position(1000, wait=True)
+            self.xarm_client.set_position(1000, wait=True)
 
     def close(self, is_lite6: bool):
         # TODO: find out close position for non lite6 gripper
         if is_lite6:
             self.xarm_client.close_lite6_gripper()
         else:
-            self.xarm_client.set_gripper_position(0, wait=True)
+            self.xarm_client.set_position(0, wait=True)
+
+    def set_position(self, position: int):
+        self.xarm_client.set_position(position, wait=True)
+
+    def initialize(self):
+        self.xarm_client.set_gripper_mode(0)
+        self.xarm_client.set_gripper_enable(True)
+        self.xarm_client.set_speed(5000) #TODO: Determine good gripper speed
+        self.xarm_client.clean_gripper_error()
 
 
 @dataclass
 class ArmPosition:
+    """Data model for the Xarm Controller arm position."""
+
     pitch: int
     position: List[int]
     x: int
@@ -143,6 +159,7 @@ class ArmPosition:
 
 @dataclass
 class State:
+    """Data model for the Xarm Controller state."""
     collision_sensitivity: int
     connected: bool
     counter: int
@@ -212,6 +229,7 @@ class State:
 
 @dataclass
 class Info:
+    """Data model for the Xarm Controller info."""
     axis: int
     device_type: int
     is_lite6: bool
@@ -249,6 +267,7 @@ class Info:
 
 @dataclass
 class XArmData:
+    """Data model for the Xarm Controller."""
 
     def __init__(self, xarm_client: XArmAPI, callback: callable):
         self.xarm_client = xarm_client
@@ -264,6 +283,9 @@ class XArmData:
         send_event = send_event | self.position.update()
         send_event = send_event | self.state.update()
         send_event = send_event | self.info.update()
+
+    def _interpret_error_code(self, error_code):
+        pass
 
     def clear_errors(self):
         self.xarm_client.clear_errors()
@@ -285,13 +307,10 @@ class XArmData:
         self.gripper.close(position if position is not None else 0, self.info.is_lite6)
 
 
-def initialize(client: XArmAPI):
-    """callback to re-initialize the xArm"""
-
-    client.motion_enable(True)
-    client.clean_error()
-    client.set_mode(0)
-    client.set_state(0)
-    client.set_gripper_mode(0)
-    client.set_gripper_enable(True)
-    client.clean_gripper_error()
+    def initialize(self):
+        """callback to re-initialize the xArm"""
+        self.xarm_client.motion_enable(True)
+        self.xarm_client.clean_error()
+        self.xarm_client.set_mode(0)
+        self.xarm_client.set_state(0)
+        self.xarm_client.sleep(1)
