@@ -51,6 +51,27 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         action_fn=lambda device: device.clear_errors(),
         entity_category=EntityCategory.CONFIG,
     ),
+    XArmControllerButtonEntityDescription(
+        key="open_gripper_button",
+        name="Open Gripper",
+        icon="mdi:lock-open-variant-outline",
+        action_fn=lambda device: device.open_gripper(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    XArmControllerButtonEntityDescription(
+        key="open_gripper_button",
+        name="Open Gripper",
+        icon="mdi:lock-outline",
+        action_fn=lambda device: device.close_gripper(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    XArmControllerButtonEntityDescription(
+        key="set_position_button",
+        name="Set Position",
+        icon="mdi:cursor-move",
+        action_fn=lambda device: device.position.set_position_to_targets(),
+        entity_category=EntityCategory.CONFIG,
+    )
 )
 
 

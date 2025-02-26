@@ -17,7 +17,7 @@ from homeassistant.const import EntityCategory, UnitOfLength, DEGREE
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import XArmControllerUpdateCoordinator
-from .const import DOMAIN, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
+from .const import DOMAIN, POS_X, POS_Y, POS_Z, ROLL, PITCH, YAW, ERROR_CODE, LOGGER
 
 # from .entity import XArmControllerEntity
 
@@ -44,7 +44,6 @@ class XArmControllerSensorEntityDescription(
 SENSORS: list[XArmControllerSensorEntityDescription] = [
     XArmControllerSensorEntityDescription(
         key=ROLL,
-        translation_key=ROLL,
         # device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -54,7 +53,6 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     ),
     XArmControllerSensorEntityDescription(
         key=PITCH,
-        translation_key=PITCH,
         # device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -64,12 +62,38 @@ SENSORS: list[XArmControllerSensorEntityDescription] = [
     ),
     XArmControllerSensorEntityDescription(
         key=YAW,
-        translation_key="yaw",
         # device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda device: device.position.yaw,
+        icon="mdi:axis-z-rotate-counterclockwise",
+    ),
+    XArmControllerSensorEntityDescription(
+        key=POS_X,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.position.x,
+        icon="mdi:axis-x-rotate-counterclockwise",
+    ),
+    XArmControllerSensorEntityDescription(
+        key=POS_Y,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.position.y,
+        icon="mdi:axis-y-rotate-counterclockwise",
+    ),
+    XArmControllerSensorEntityDescription(
+        key=POS_Z,
+        # device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: device.position.z,
         icon="mdi:axis-z-rotate-counterclockwise",
     ),
     XArmControllerSensorEntityDescription(

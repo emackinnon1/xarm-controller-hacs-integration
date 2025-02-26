@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Optional
 
 from homeassistant.components.number import (
     NumberEntity,
@@ -25,6 +26,9 @@ from .const import (
     POS_X,
     POS_Y,
     POS_Z,
+    TARGET_X,
+    TARGET_Y,
+    TARGET_Z,
     COLLISION_SENSITIVITY,
 )
 from .coordinator import XArmControllerUpdateCoordinator
@@ -36,7 +40,6 @@ class XArmControllerNumberEntityMixin:
     """Mixin for XArm Controller position."""
 
     value_fn: Callable[..., any]
-    set_value_fn: Callable[..., None]
 
 
 @dataclass
@@ -45,10 +48,12 @@ class XArmControllerNumberEntityDescription(
 ):
     """Editable (number) position entity description for XArm Controller."""
 
+    set_value_fn: Callable[..., None] | None = None
+
 
 NUMBERS: tuple[XArmControllerNumberEntityDescription, ...] = (
     XArmControllerNumberEntityDescription(
-        key=POS_X,
+        key=TARGET_X,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
         icon="mdi:axis-x-arrow",
@@ -56,11 +61,11 @@ NUMBERS: tuple[XArmControllerNumberEntityDescription, ...] = (
         native_step=1,
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
-        value_fn=lambda device: device.position.x,
-        set_value_fn=lambda device, value: device.position.set_position(x=value),
+        value_fn=lambda device: device.position.target_x,
+        set_value_fn=lambda device, value: device.position.set_target_position(target_x=value),
     ),
     XArmControllerNumberEntityDescription(
-        key=POS_Y,
+        key=TARGET_Y,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
         icon="mdi:axis-y-arrow",
@@ -68,11 +73,11 @@ NUMBERS: tuple[XArmControllerNumberEntityDescription, ...] = (
         native_step=1,
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
-        value_fn=lambda device: device.position.y,
-        set_value_fn=lambda device, value: device.position.set_position(y=value),
+        value_fn=lambda device: device.position.target_y,
+        set_value_fn=lambda device, value: device.position.set_target_position(target_y=value),
     ),
     XArmControllerNumberEntityDescription(
-        key=POS_Z,
+        key=TARGET_Z,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         device_class=NumberDeviceClass.DISTANCE,
         icon="mdi:axis-z-arrow",
@@ -80,8 +85,8 @@ NUMBERS: tuple[XArmControllerNumberEntityDescription, ...] = (
         native_step=1,
         native_min_value=0,
         native_max_value=1000,  # TODO: Determine actual limit
-        value_fn=lambda device: device.position.z,
-        set_value_fn=lambda device, value: device.position.set_position(z=value),
+        value_fn=lambda device: device.position.target_z,
+        set_value_fn=lambda device, value: device.position.set_target_position(target_z=value),
     ),
     # XArmControllerNumberEntityDescription(
     #     key=GRIPPER_SPEED,

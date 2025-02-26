@@ -1,17 +1,21 @@
 """Data models that represent an Xarm Controller"""
-
+# import functools
 from abc import ABC
 from dataclasses import dataclass
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 
 from .const import GRIPPER_ERROR_CODES, LOGGER, LOGGERFORHA
 
 from xarm.wrapper import XArmAPI
 
 
-def error_handler(model, result):
-    if result[0] != 0:
-        model.error_code = result[0]
+# TODO: Add error handling for certain methods
+# def handle_error_codes(func):
+#     @functools.wraps(func)
+#     def wrapper(self, *args, **kwargs):
+#         result = func(self, *args, **kwargs)
+#         return result
+#     return wrapper
 
 
 @dataclass
@@ -46,9 +50,9 @@ class Gripper:
         old_data = f"{self.__dict__}"
 
         self.error_code = self.xarm.get_gripper_err_code()
+        self.error_msg = self.interpret_error_code(self.error_code)
         self.position = self.xarm.get_gripper_position()
         self.version = self.xarm.get_gripper_version()
-        self.error_msg = self.interpret_error_code(self.error_code)
 
         new_data = f"{self.__dict__}"
         return old_data != new_data
@@ -66,6 +70,20 @@ class Gripper:
             self.error_msg = GRIPPER_ERROR_CODES[error_code]
         self.error_msg = "Unknown error"
 
+    def open(self, is_lite6: bool):
+        # TODO: find out open position for non lite6 gripper
+        if is_lite6:
+            self.xarm_client.open_lite6_gripper()
+        else:
+            self.xarm_client.set_gripper_position(1000, wait=True)
+
+    def close(self, is_lite6: bool):
+        # TODO: find out close position for non lite6 gripper
+        if is_lite6:
+            self.xarm_client.close_lite6_gripper()
+        else:
+            self.xarm_client.set_gripper_position(0, wait=True)
+
 
 @dataclass
 class ArmPosition:
@@ -74,6 +92,9 @@ class ArmPosition:
     x: int
     y: int
     z: int
+    target_x: int
+    target_y: int
+    target_z: int
     roll: int
     yaw: int
 
@@ -84,6 +105,9 @@ class ArmPosition:
         self.x = self.position[0]
         self.y = self.position[1]
         self.z = self.position[2]
+        self.target_x = 0
+        self.target_y = 0
+        self.target_z = 0
         self.roll = self.position[3]
         self.pitch = self.position[4]
         self.yaw = self.position[5]
@@ -103,13 +127,18 @@ class ArmPosition:
 
         return old_data != new_data
 
-    def set_position(self, x: int = None, y: int = None, z: int = None):
-        if x is not None:
-            self.xarm_client.set_position(x=x)
-        if y is not None:
-            self.xarm_client.set_position(y=y)
-        if z is not None:
-            self.xarm_client.set_position(z=z)
+    def set_target_position(self, target_x: int = None, target_y: int = None, target_z: int = None):
+        if target_x is not None:
+            self.target_x = target_x
+        if target_y is not None:
+            self.target_y = target_y
+        if target_z is not None:
+            self.target_z = target_z
+
+    def set_position_to_targets(self):
+        self.xarm_client.set_position(
+            x=self.target_x, y=self.target_y, z=self.target_z
+        )
 
 
 @dataclass
@@ -122,7 +151,6 @@ class State:
     has_error: bool
     has_err_warn: bool
     has_warn: bool
-    is_lite6: bool
     is_moving: int
     mode: int
     motor_brake_states: list[int]
@@ -143,7 +171,6 @@ class State:
         self.has_error = False
         self.has_err_warn = False
         self.has_warn = False
-        self.is_lite6 = False
         # self.is_moving = self.xarm_client.get_is_moving()
         self.mode = 0
         # self.motor_brake_states = self.xarm_client.motor_brake_states
@@ -185,15 +212,19 @@ class State:
 
 @dataclass
 class Info:
+    axis: int
     device_type: int
+    is_lite6: bool
     serial: int
     version: int
     version_number: tuple[int]
 
     def __init__(self, xarm_client: XArmAPI):
         self.xarm_client = xarm_client
+        self.axis = 0
         self.device_type = 1
-        self.serial = 123456789
+        self.is_lite6 = True
+        self.serial = xarm_client.sn
         self.version = 1
         self.version_number = (1, 0, 0)
         # self.device_type = self.xarm_client.device_type or 1
@@ -204,7 +235,9 @@ class Info:
     def update(self):
         old_data = f"{self.__dict__}"
 
+        self.axis = self.xarm_client.axis
         self.device_type = self.xarm_client.device_type
+        self.is_lite6 = self.xarm_client.is_lite6
         self.serial = self.xarm_client.sn
         self.version = self.xarm_client.version
         self.version_number = self.xarm_client.version_number
@@ -241,6 +274,15 @@ class XArmData:
 
     def go_home(self):
         self.xarm_client.move_gohome()
+
+    def move(self, _x: int, _y: int, _z: int):
+        pass
+
+    def open_gripper(self):
+        self.gripper.open(self.info.is_lite6)
+
+    def close_gripper(self, position: Optional[int] = None):
+        self.gripper.close(position if position is not None else 0, self.info.is_lite6)
 
 
 def initialize(client: XArmAPI):

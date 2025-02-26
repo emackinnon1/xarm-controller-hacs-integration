@@ -6,7 +6,7 @@ class XArmDummyAPI:
         self.coordinator = coordinator
 
     @property
-    def connect(self) -> None:
+    def connected(self) -> None:
         return True
 
     @property
@@ -15,11 +15,18 @@ class XArmDummyAPI:
 
     @property
     def device_type(self) -> str:
-        return 12344
+        return 9
+
+    @property
+    def sn(self) -> int:
+        return 123456789
 
     @property
     def state(self) -> int:
         return self.coordinator.get_xarm_model().state.state
+    
+    def connect(self, port: str) -> None:
+        return True
 
     def clear_errors(self):
         self.coordinator.get_xarm_model().state.error_code = 0
@@ -45,3 +52,16 @@ class XArmDummyAPI:
             self.coordinator.get_xarm_model().position.y = y
         if z is not None:
             self.coordinator.get_xarm_model().position.z = z
+
+    def open_lite6_gripper(self):
+        self.coordinator.get_xarm_model().gripper.position = 1000
+
+    def close_lite6_gripper(self):
+        self.coordinator.get_xarm_model().gripper.position = 0
+
+    def open_gripper(self):
+        self.coordinator.get_xarm_model().gripper.position = 1000
+
+    def close_gripper(self):
+        self.coordinator.get_xarm_model().gripper.position = 0
+
