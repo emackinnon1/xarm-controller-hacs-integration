@@ -2,12 +2,12 @@
   "name": "xarm-controller-hacs-integration",
   "description": "Documentation for the xarm-controller-hacs-integration to Home Assistant",
   "logo": {
-    "light": "https://rawcdn.githack.com/home-assistant/brands/bfecc94a4e84b3107445849311f43d85f850f63f/custom_integrations/bambu_lab/icon@2x.png",
-    "dark": "https://rawcdn.githack.com/home-assistant/brands/bfecc94a4e84b3107445849311f43d85f850f63f/custom_integrations/bambu_lab/dark_icon@2x.png"
+    "light": "https://avatars.githubusercontent.com/u/44965157?s=200&v=4",
+    "dark": "https://avatars.githubusercontent.com/u/44965157?s=200&v=4"
   },
   "favicon": {
-    "light": "https://rawcdn.githack.com/home-assistant/brands/bfecc94a4e84b3107445849311f43d85f850f63f/custom_integrations/bambu_lab/icon@2x.png",
-    "dark": "https://rawcdn.githack.com/home-assistant/brands/bfecc94a4e84b3107445849311f43d85f850f63f/custom_integrations/bambu_lab/dark_icon@2x.png"
+    "light": "https://images.crunchbase.com/image/upload/c_pad,h_170,w_170,f_auto,b_white,q_auto:eco,dpr_2/v1472371882/usrbrazbkxft1zcv0fqu.png",
+    "dark": "https://images.crunchbase.com/image/upload/c_pad,h_170,w_170,f_auto,b_white,q_auto:eco,dpr_2/v1472371882/usrbrazbkxft1zcv0fqu.png"
   },
   "theme": {
     "primary": "#22a041"
