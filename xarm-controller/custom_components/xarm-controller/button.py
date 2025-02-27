@@ -59,8 +59,8 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     XArmControllerButtonEntityDescription(
-        key="open_gripper_button",
-        name="Open Gripper",
+        key="close_gripper_button",
+        name="Close Gripper",
         icon="mdi:lock-outline",
         action_fn=lambda device: device.close_gripper(),
         entity_category=EntityCategory.CONFIG,

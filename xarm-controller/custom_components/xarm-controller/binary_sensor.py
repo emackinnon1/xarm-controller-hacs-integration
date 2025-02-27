@@ -42,7 +42,7 @@ BINARY_SENSORS: tuple[XArmControllerBinarySensorEntityDescription] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         is_on_fn=lambda device: device.state.error_code != 0,
         extra_attributes=lambda device: {
-            "error_msg": device.state.error_code_msg,
+            "error_msg": device.state.error_msg,
             "error_code": device.state.error_code,
         },
     ),
@@ -53,7 +53,7 @@ BINARY_SENSORS: tuple[XArmControllerBinarySensorEntityDescription] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         is_on_fn=lambda device: device.state.warn_code != 0,
         extra_attributes=lambda device: {
-            "warn_msg": device.state.warn_code_msg,
+            "warn_msg": device.state.warn_msg,
             "warn_code": device.state.warn_code,
         },
     ),
