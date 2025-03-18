@@ -100,6 +100,10 @@ class Gripper:
         else:
             self.xarm_client.set_position(1000, wait=True)
 
+    def stop(self, is_lite6: bool):
+        if is_lite6:
+            self.xarm_client.stop_lite6_gripper()
+
     def close(self, is_lite6: bool):
         # TODO: find out close position for non lite6 gripper
         if is_lite6:

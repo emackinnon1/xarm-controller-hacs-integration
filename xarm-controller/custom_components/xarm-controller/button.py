@@ -28,6 +28,8 @@ class XArmControllerButtonEntityDescription(
 ):
     """Button entity description for XArm Controller."""
 
+    available_fn: Callable[..., bool] = lambda _: True
+
 
 BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
     XArmControllerButtonEntityDescription(
@@ -35,6 +37,7 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         name="Emergency Stop",
         icon="mdi:alert-octagon",
         action_fn=lambda device: device.emergency_stop(),
+        available_fn=lambda device: device.state.connected,
         entity_category=EntityCategory.CONFIG,
     ),
     XArmControllerButtonEntityDescription(
@@ -42,6 +45,7 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         name="Go Home",
         icon="mdi:home-import-outline",
         action_fn=lambda device: device.go_home(),
+        available_fn=lambda device: device.state.connected,
         entity_category=EntityCategory.CONFIG,
     ),
     XArmControllerButtonEntityDescription(
@@ -49,6 +53,7 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         name="Clear Errors",
         icon="mdi:alert-circle-check-outline",
         action_fn=lambda device: device.clear_errors(),
+        available_fn=lambda device: device.state.connected,
         entity_category=EntityCategory.CONFIG,
     ),
     XArmControllerButtonEntityDescription(
@@ -56,12 +61,22 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         name="Open Gripper",
         icon="mdi:lock-open-variant-outline",
         action_fn=lambda device: device.open_gripper(),
+        available_fn=lambda device: device.state.connected,
         entity_category=EntityCategory.CONFIG,
     ),
     XArmControllerButtonEntityDescription(
         key="close_gripper_button",
         name="Close Gripper",
         icon="mdi:lock-outline",
+        action_fn=lambda device: device.close_gripper(),
+        available_fn=lambda device: device.state.connected,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    XArmControllerButtonEntityDescription(
+        key="stop_gripper_button",
+        name="Stop Gripper",
+        icon="mdi:alert-octagon",
+        available_fn=lambda device: device.info.is_lite6,
         action_fn=lambda device: device.close_gripper(),
         entity_category=EntityCategory.CONFIG,
     ),
@@ -70,8 +85,9 @@ BUTTONS: tuple[XArmControllerButtonEntityDescription, ...] = (
         name="Set Position",
         icon="mdi:cursor-move",
         action_fn=lambda device: device.position.set_position_to_targets(),
+        available_fn=lambda device: device.state.connected,
         entity_category=EntityCategory.CONFIG,
-    )
+    ),
 )
 
 
@@ -120,7 +136,7 @@ class XArmControllerButton(ButtonEntity):
 
     @property
     def available(self) -> bool:
-        return self.coordinator.get_xarm_model().state.connected
+        return self.entity_description.available_fn(self.coordinator.get_xarm_model())
 
     async def async_press(self) -> None:
         """Pause the Print on button press"""
